@@ -52,3 +52,6 @@ example
 *.ipa
 coverage/
 supabase/.temp/
+
+# Material de diseño de trabajo (ya fusionado en DESIGN.md y src/ui)
+Nuevo/
