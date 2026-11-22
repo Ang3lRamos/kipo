@@ -1,6 +1,6 @@
 # Kipo — contexto del proyecto
 
-App móvil personal (Expo / React Native + TypeScript) para guardar documentos, vencimientos, ubicación física de originales y, más adelante, contraseñas y notas seguras. Uso personal de un solo usuario (Angel). El plan por fases está en `PLAN.md`; trabaja siempre sobre la fase activa.
+App móvil personal (Expo / React Native + TypeScript) para guardar documentos, vencimientos, ubicación física de originales y, más adelante, contraseñas y notas seguras. Uso personal de un solo usuario (Angel). El plan por fases está en `PLAN.md`; trabaja siempre sobre la fase activa. Todo lo visual sigue `DESIGN.md` y los tokens de `src/ui/themes.ts`: no escribas colores ni tamaños directamente en las pantallas.
 
 ## Principios que no se negocian
 
@@ -18,6 +18,7 @@ App móvil personal (Expo / React Native + TypeScript) para guardar documentos, 
 - `expo-secure-store` (también hace el desbloqueo con huella), `expo-screen-capture`
 - `expo-image-manipulator`, `expo-image-picker`, `expo-document-picker`, `react-native-document-scanner-plugin`
 - `expo-notifications` (solo notificaciones locales)
+- UI: `react-native-svg` (mascota Kipo), `lucide-react-native` (íconos, nunca emojis), `expo-haptics`, fuentes Space Grotesk e Inter (`@expo-google-fonts`)
 - Cripto: `react-native-quick-crypto` (Argon2id, AES-256-GCM y CSPRNG nativos con API de Node), `@noble/hashes` (HKDF, SHA-256), `@scure/base`. Decisiones explicadas en `docs/criptografia.md`
 - Nube: Supabase (Auth, Postgres con RLS, Edge Functions en Deno) + Cloudflare R2 (URLs prefirmadas S3)
 - OCR: por definir en la fase 6 (`@react-native-ml-kit/text-recognition` no está probado en la New Architecture)
