@@ -104,15 +104,15 @@ Como todo se cifra con la DEK, cambiar la contraseña maestra solo vuelve a envo
 
 **Tareas**
 
-- [ ] Onboarding: crear contraseña maestra (con medidor de fortaleza) y mostrar el kit de recuperación
-- [ ] `src/crypto`: derivar KEK, generar/envolver/desenvolver la DEK, `encryptFile` y `decryptFile` con AES-256-GCM y nonce aleatorio por archivo
-- [ ] Pruebas: ida y vuelta, nonce único, falla si se altera un byte, falla con contraseña incorrecta
-- [ ] Migrar SQLite a SQLCipher usando la DEK
-- [ ] Desbloqueo biométrico y, como respaldo, contraseña maestra
-- [ ] Bloqueo automático al pasar a segundo plano o tras N minutos
-- [ ] Ocultar el contenido en el selector de apps y bloquear capturas en pantallas sensibles (`expo-screen-capture`)
-- [ ] Los archivos descifrados solo viven en memoria o en la caché temporal, que se borra al bloquear
-- [ ] Cambiar la contraseña maestra
+- [x] Onboarding: crear contraseña maestra (con medidor de fortaleza) y mostrar el kit de recuperación
+- [x] `src/crypto`: derivar KEK, generar/envolver/desenvolver la DEK, `encryptFile` y `decryptFile` con AES-256-GCM y nonce aleatorio por archivo
+- [x] Pruebas: ida y vuelta, nonce único, falla si se altera un byte, falla con contraseña incorrecta
+- [x] Migrar SQLite a SQLCipher usando la DEK
+- [x] Desbloqueo biométrico y, como respaldo, contraseña maestra
+- [x] Bloqueo automático al pasar a segundo plano o tras N minutos
+- [x] Ocultar el contenido en el selector de apps y bloquear capturas en pantallas sensibles (`expo-screen-capture`)
+- [x] Los archivos descifrados solo viven en memoria o en la caché temporal, que se borra al bloquear
+- [x] Cambiar la contraseña maestra
 
 **Terminado cuando**: copias la carpeta de la app y la base de datos, y sin la contraseña no se puede leer nada.
 
@@ -202,7 +202,9 @@ Decide antes: ¿Bitwarden para las contraseñas, o construirlo tú?
 - [ ] Exportar un respaldo cifrado (`.kipo`) y probar a restaurarlo
 - [ ] Compartir temporal: descifrar → enlace R2 de 24 horas con un archivo re-cifrado y una clave aparte (o solo exportar al compartir del sistema)
 - [ ] Pantalla de ajustes: tiempo de bloqueo, biometría, alertas, almacenamiento usado
-- [ ] Ícono, splash y modo oscuro
+- [ ] Temas elegibles: paletas Menta, Lavanda, Durazno y Cielo, más modo oscuro (claro, oscuro o según el sistema). `src/ui/themes.ts` con los tokens de cada paleta, un `ThemeProvider` y la elección guardada en SecureStore (no en SQLite: la base está cifrada). El color de la mascota sigue al tema.
+- [ ] Mascota Kipo: el SVG como componente con `react-native-svg` y animaciones con `react-native-reanimated` (flotar, parpadear, despertar al desbloquear)
+- [ ] Ícono y splash
 - [ ] `eas build --profile production`: APK o AAB en Android, TestFlight en iPhone
 - [ ] Revisión de seguridad final con una checklist (ver abajo)
 
