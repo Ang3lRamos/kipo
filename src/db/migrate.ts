@@ -1,9 +1,10 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { migration001 } from './migrations/001-initial';
+import { migration002 } from './migrations/002-document-pages';
 
 // Orden de aplicación. La versión de cada migración es su posición + 1.
-const migrations: readonly string[] = [migration001];
+const migrations: readonly string[] = [migration001, migration002];
 
 export async function migrateDb(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
