@@ -56,10 +56,10 @@ activity_log(id, document_id, action, created_at)  -- creado, editado, visto, co
 
 **Pantallas**
 
-- [ ] Inicio: búsqueda arriba, filtros por categoría y lista con miniaturas
-- [ ] Detalle del documento: datos, ubicación física, historial de actividad
-- [ ] Crear/editar documento (formulario, todavía sin archivo)
-- [ ] "Por vencer": documentos que vencen en los próximos 60 días
+- [x] Inicio: búsqueda arriba, filtros por categoría y lista con miniaturas
+- [x] Detalle del documento: datos, ubicación física, historial de actividad
+- [x] Crear/editar documento (formulario, todavía sin archivo)
+- [x] "Por vencer": documentos que vencen en los próximos 60 días
 
 **Terminado cuando**: creas 10 documentos de prueba y los encuentras por nombre, etiqueta o ubicación en menos de 2 segundos.
 
