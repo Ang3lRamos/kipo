@@ -38,6 +38,17 @@
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "c93f9b9b-160f-4841-8e93-9e72b110810b"
+      }
+    },
+    "owner": "angeldev11"
   }
 }
