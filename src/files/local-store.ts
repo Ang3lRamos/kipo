@@ -2,18 +2,11 @@ import { Directory, File, Paths } from 'expo-file-system';
 
 import { documentDir } from './storage-paths';
 
-// Archivos permanentes de la app. En la fase 3 aquí solo habrá datos cifrados.
+// Archivos permanentes de la app. Desde la fase 3 aquí solo hay datos cifrados
+// (ver encrypted-store.ts); este módulo no cifra ni descifra.
 
 export function localFile(relativePath: string): File {
   return new File(Paths.document, relativePath);
-}
-
-// Mueve un archivo temporal a su ruta definitiva y devuelve su tamaño en bytes.
-export async function moveIntoStore(tempUri: string, relativePath: string): Promise<number> {
-  const destination = localFile(relativePath);
-  destination.parentDirectory.create({ intermediates: true, idempotent: true });
-  await new File(tempUri).move(destination, { overwrite: true });
-  return destination.size;
 }
 
 export function deleteLocalFile(relativePath: string | null): void {

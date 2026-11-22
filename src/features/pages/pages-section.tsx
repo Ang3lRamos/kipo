@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { softDeletePage } from '@/db/pages-repo';
+import { useSession } from '@/features/lock/vault-context';
 import type { CapturedItem } from '@/files/capture';
 import { formatBytes } from '@/files/format-bytes';
 import { deleteLocalFile } from '@/files/local-store';
@@ -18,6 +19,7 @@ import { usePages } from './use-pages';
 
 export function PagesSection({ documentId }: { documentId: string }) {
   const db = useSQLiteContext();
+  const { keys } = useSession();
   const theme = useTheme();
   const { data: pages, reload } = usePages(documentId);
   const [busy, setBusy] = useState(false);
@@ -28,7 +30,7 @@ export function PagesSection({ documentId }: { documentId: string }) {
     setBusy(true);
     setMessage(null);
     try {
-      const { failed } = await importPages(db, documentId, items);
+      const { failed } = await importPages(db, keys.fileKey, documentId, items);
       if (failed > 0) setMessage(`No se pudieron guardar ${failed} de ${items.length} páginas.`);
     } finally {
       setBusy(false);

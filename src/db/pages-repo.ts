@@ -52,7 +52,7 @@ export async function getPage(db: SQLiteDatabase, id: string): Promise<DocumentP
 }
 
 // Actualiza la portada y el tamaño total del documento a partir de sus páginas.
-async function refreshCover(db: SQLiteDatabase, documentId: string): Promise<void> {
+export async function refreshCover(db: SQLiteDatabase, documentId: string): Promise<void> {
   await db.runAsync(
     `UPDATE documents SET
        thumb_path = (SELECT thumb_path FROM document_pages

@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
+import { withAutoLockSuspended } from '@/features/lock/auto-lock-guard';
 import { pickFromGallery, pickPdf, scanWithCamera, type CapturedItem } from '@/files/capture';
 import { Button } from '@/ui/button';
 
@@ -12,7 +13,8 @@ type Props = {
 export function AddPageButtons({ busy, onCaptured, onError }: Props) {
   const run = (source: () => Promise<CapturedItem[]>, label: string) => async () => {
     try {
-      const items = await source();
+      // El escáner y los selectores son pantallas del sistema: no bloquear mientras se usan.
+      const items = await withAutoLockSuspended(source);
       if (items.length > 0) onCaptured(items);
     } catch (error) {
       console.error(`Error al usar ${label}`, error);

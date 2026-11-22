@@ -2,9 +2,10 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatBytes } from '@/files/format-bytes';
-import { localFile } from '@/files/local-store';
 import type { DocumentPage } from '@/types/page';
 import { useTheme } from '@/ui/theme';
+
+import { useDecryptedImage } from './use-decrypted-image';
 
 type Props = {
   page: DocumentPage;
@@ -15,6 +16,7 @@ type Props = {
 
 export function PageThumb({ page, index, onPress, onLongPress }: Props) {
   const theme = useTheme();
+  const thumbUri = useDecryptedImage(page.thumbPath, page.id, 'thumb');
   return (
     <Pressable
       accessibilityRole="button"
@@ -26,17 +28,17 @@ export function PageThumb({ page, index, onPress, onLongPress }: Props) {
       <View
         style={[styles.frame, { backgroundColor: theme.background, borderColor: theme.border }]}
       >
-        {page.thumbPath ? (
+        {page.mimeType === 'application/pdf' ? (
+          <Text style={styles.pdf}>PDF</Text>
+        ) : thumbUri ? (
           <Image
-            source={{ uri: localFile(page.thumbPath).uri }}
+            source={{ uri: thumbUri }}
             style={styles.image}
             contentFit="cover"
-            // Sin caché en disco: en la fase 3 las miniaturas descifradas no deben quedar copiadas.
-            cachePolicy="memory"
+            // Sin caché en disco: la miniatura descifrada no debe quedar copiada.
+            cachePolicy="none"
           />
-        ) : (
-          <Text style={styles.pdf}>PDF</Text>
-        )}
+        ) : null}
       </View>
       <Text style={[styles.caption, { color: theme.muted }]}>
         {`${index + 1} · ${formatBytes(page.sizeBytes)}`}

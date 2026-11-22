@@ -3,19 +3,25 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 
 import { addPages } from '@/db/pages-repo';
 import type { CapturedItem } from '@/files/capture';
+import { storeEncrypted } from '@/files/encrypted-store';
 import { expoImageOps } from '@/files/expo-image-ops';
 import { processImage } from '@/files/image-pipeline';
-import { deleteLocalFile, discardTemp, moveIntoStore } from '@/files/local-store';
+import { deleteLocalFile, discardTemp } from '@/files/local-store';
 import { pageFilePath, pageThumbPath } from '@/files/storage-paths';
 import type { NewPage } from '@/types/page';
 
-async function storeImage(documentId: string, pageId: string, uri: string): Promise<NewPage> {
+async function storeImage(
+  fileKey: Uint8Array,
+  documentId: string,
+  pageId: string,
+  uri: string,
+): Promise<NewPage> {
   const { page, thumb } = await processImage(expoImageOps, uri);
-  const filePath = pageFilePath(documentId, pageId, 'webp');
+  const filePath = pageFilePath(documentId, pageId);
   const thumbPath = pageThumbPath(documentId, pageId);
   try {
-    const sizeBytes = await moveIntoStore(page.uri, filePath);
-    await moveIntoStore(thumb.uri, thumbPath);
+    const sizeBytes = await storeEncrypted(fileKey, page.uri, filePath, pageId, 'page');
+    await storeEncrypted(fileKey, thumb.uri, thumbPath, pageId, 'thumb');
     return {
       id: pageId,
       documentId,
@@ -35,9 +41,14 @@ async function storeImage(documentId: string, pageId: string, uri: string): Prom
   }
 }
 
-async function storePdf(documentId: string, pageId: string, uri: string): Promise<NewPage> {
-  const filePath = pageFilePath(documentId, pageId, 'pdf');
-  const sizeBytes = await moveIntoStore(uri, filePath);
+async function storePdf(
+  fileKey: Uint8Array,
+  documentId: string,
+  pageId: string,
+  uri: string,
+): Promise<NewPage> {
+  const filePath = pageFilePath(documentId, pageId);
+  const sizeBytes = await storeEncrypted(fileKey, uri, filePath, pageId, 'pdf');
   return {
     id: pageId,
     documentId,
@@ -52,9 +63,10 @@ async function storePdf(documentId: string, pageId: string, uri: string): Promis
 
 export type ImportResult = { added: number; failed: number };
 
-// capturar → comprimir (WebP) → miniatura → guardar. Cifrar y subir llegan en las fases 3 y 5.
+// capturar → comprimir (WebP) → miniatura → cifrar → guardar. Subir llega en la fase 5.
 export async function importPages(
   db: SQLiteDatabase,
+  fileKey: Uint8Array,
   documentId: string,
   items: CapturedItem[],
 ): Promise<ImportResult> {
@@ -65,8 +77,8 @@ export async function importPages(
     try {
       pages.push(
         item.kind === 'image'
-          ? await storeImage(documentId, pageId, item.uri)
-          : await storePdf(documentId, pageId, item.uri),
+          ? await storeImage(fileKey, documentId, pageId, item.uri)
+          : await storePdf(fileKey, documentId, pageId, item.uri),
       );
     } catch (error) {
       failed++;
