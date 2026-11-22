@@ -15,12 +15,12 @@ App móvil personal (Expo / React Native + TypeScript) para guardar documentos, 
 
 - Expo SDK (development build, no Expo Go a partir de la fase 2), `expo-router`, TypeScript estricto
 - `expo-sqlite` con SQLCipher + FTS5 para búsqueda
-- `expo-secure-store`, `expo-local-authentication`, `expo-screen-capture`
+- `expo-secure-store` (también hace el desbloqueo con huella), `expo-screen-capture`
 - `expo-image-manipulator`, `expo-image-picker`, `expo-document-picker`, `react-native-document-scanner-plugin`
 - `expo-notifications` (solo notificaciones locales)
-- Cripto: `react-native-quick-crypto` (scrypt/AES-GCM nativo) o `@noble/ciphers` + `@noble/hashes`
+- Cripto: `react-native-quick-crypto` (Argon2id, AES-256-GCM y CSPRNG nativos con API de Node), `@noble/hashes` (HKDF, SHA-256), `@scure/base`. Decisiones explicadas en `docs/criptografia.md`
 - Nube: Supabase (Auth, Postgres con RLS, Edge Functions en Deno) + Cloudflare R2 (URLs prefirmadas S3)
-- OCR: `@react-native-ml-kit/text-recognition` (en el dispositivo)
+- OCR: por definir en la fase 6 (`@react-native-ml-kit/text-recognition` no está probado en la New Architecture)
 
 ## Estructura
 
@@ -29,11 +29,13 @@ src/                 # alias @/* apunta aquí
   app/               # rutas de expo-router (pantallas); nada que no sea pantalla
   db/                # esquema SQLite, migraciones, repositorios
   crypto/            # derivación de claves, envoltura de la DEK, cifrar/descifrar
-  files/             # captura, compresión, miniaturas, almacenamiento local
+    testing/         # primitivas sobre node:crypto, solo para Jest
+  files/             # captura, compresión, miniaturas, almacenamiento cifrado
   sync/              # cliente Supabase, subida/bajada R2, cola de sincronización
   notifications/     # programación de alertas de vencimiento
-  features/<x>/      # componentes y hooks por funcionalidad
+  features/<x>/      # componentes y hooks por funcionalidad (lock/ = bóveda, bloqueo y desbloqueo)
   ui/                # componentes reutilizables
+docs/                # decisiones de diseño (criptografia.md)
 supabase/
   migrations/        # SQL de tablas y políticas RLS
   functions/         # Edge Functions (upload-url, download-url)
@@ -50,6 +52,8 @@ supabase/
 - Archivos pequeños y con una sola responsabilidad. Si un archivo pasa de unas 200 líneas, divídelo.
 - Nada de `any`. Tipos compartidos en `src/types`.
 - Las funciones de `src/crypto` llevan pruebas unitarias (Jest): ida y vuelta, nonce único, rechazo de datos alterados.
+- Archivos en disco: solo cifrados (`src/files/encrypted-store.ts`). Imágenes descifradas solo en memoria; PDF descifrados solo en `cache/decrypted/`.
+- `Buffer` y `node:*` están prohibidos fuera de las pruebas (regla de ESLint): no existen en el teléfono.
 - Cada cambio de esquema es una migración nueva; nunca se edita una migración ya aplicada.
 - Commits pequeños por tarea. `.env` y llaves nunca entran a git.
 - Comentarios y textos de la UI en español.

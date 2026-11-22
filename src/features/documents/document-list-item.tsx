@@ -2,7 +2,8 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { localFile } from '@/files/local-store';
+import { useDecryptedImage } from '@/features/pages/use-decrypted-image';
+import { pageIdFromThumbPath } from '@/files/storage-paths';
 import type { DocumentRecord } from '@/types/document';
 import { useTheme } from '@/ui/theme';
 
@@ -12,6 +13,8 @@ import { ExpiryBadge } from './expiry-badge';
 export function DocumentListItem({ doc }: { doc: DocumentRecord }) {
   const theme = useTheme();
   const info = categoryInfo[doc.category];
+  const coverPageId = doc.thumbPath ? pageIdFromThumbPath(doc.thumbPath) : null;
+  const thumbUri = useDecryptedImage(doc.thumbPath, coverPageId, 'thumb');
 
   return (
     // Se navega con router.push: <Link asChild> no acepta estilos en arreglo en esta versión.
@@ -25,12 +28,12 @@ export function DocumentListItem({ doc }: { doc: DocumentRecord }) {
       ]}
     >
       <View style={[styles.thumb, { backgroundColor: theme.background }]}>
-        {doc.thumbPath ? (
+        {thumbUri ? (
           <Image
-            source={{ uri: localFile(doc.thumbPath).uri }}
+            source={{ uri: thumbUri }}
             style={styles.thumbImage}
             contentFit="cover"
-            cachePolicy="memory"
+            cachePolicy="none"
           />
         ) : (
           <Text style={styles.icon}>{info.icon}</Text>
