@@ -83,7 +83,7 @@ export default function SecurityScreen() {
         <Text style={{ color: message.ok ? theme.primary : theme.danger }}>{message.text}</Text>
       ) : null}
 
-      <Button label="🔒 Bloquear ahora" variant="secondary" onPress={lock} />
+      <Button label="🔒 Bloquear ahora" variant="secondary" onPress={() => lock()} />
     </ScrollView>
   );
 }

@@ -5,41 +5,37 @@ import { useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { migrateLegacyDatabase } from '@/db/migrate-legacy';
-import { unlockDatabase, vaultDbName } from '@/db/open-encrypted';
+import { vaultDbName } from '@/db/open-encrypted';
+import { HomeHeaderButtons } from '@/features/lock/home-header-buttons';
+import { initVaultDatabase, vaultDbOptions } from '@/features/lock/init-vault-db';
 import type { Session } from '@/features/lock/vault-actions';
 import { VaultProvider, useVault } from '@/features/lock/vault-context';
 import { VaultGate } from '@/features/lock/vault-gate';
-import { encryptLegacyFiles } from '@/files/migrate-legacy-files';
 import { useTheme } from '@/ui/theme';
-
-import { HomeHeaderButtons } from '@/features/lock/home-header-buttons';
 
 function UnlockedApp({ session }: { session: Session }) {
   const theme = useTheme();
   const { lock } = useVault();
-  const { dbKey, fileKey } = session.keys;
+  const { keys } = session;
 
-  const onInit = useCallback(
-    async (db: SQLiteDatabase) => {
-      await unlockDatabase(db, dbKey);
-      // Datos de las fases 1 y 2 (sin cifrar): se cifran la primera vez.
-      await migrateLegacyDatabase(db);
-      await encryptLegacyFiles(db, fileKey);
-    },
-    [dbKey, fileKey],
-  );
+  const onInit = useCallback((db: SQLiteDatabase) => initVaultDatabase(db, keys), [keys]);
 
+  // SQLiteProvider llama a onError durante el render: se bloquea después, fuera del render.
   const onError = useCallback(
     (error: Error) => {
       console.error('No se pudo abrir la base cifrada', error);
-      lock();
+      setTimeout(() => lock('No se pudo abrir la base de datos. Vuelve a desbloquear.'), 0);
     },
     [lock],
   );
 
   return (
-    <SQLiteProvider databaseName={vaultDbName} onInit={onInit} onError={onError}>
+    <SQLiteProvider
+      databaseName={vaultDbName}
+      options={vaultDbOptions}
+      onInit={onInit}
+      onError={onError}
+    >
       <Stack
         screenOptions={{
           contentStyle: { backgroundColor: theme.background },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 
 import { WrongPasswordError } from '@/crypto/errors';
@@ -11,19 +11,23 @@ import { RecoverScreen } from './recover-screen';
 import { sessionFromPassword } from './vault-actions';
 import { useVault } from './vault-context';
 
-type Props = { record: VaultRecord; biometricEnabled: boolean };
+type Props = { record: VaultRecord; biometricEnabled: boolean; notice?: string | undefined };
 
-export function UnlockScreen({ record, biometricEnabled }: Props) {
+export function UnlockScreen({ record, biometricEnabled, notice }: Props) {
   const { unlock, unlockWithBiometrics } = useVault();
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | undefined>();
+  const [error, setError] = useState<string | undefined>(notice);
   const [recovering, setRecovering] = useState(false);
+  const prompted = useRef(false);
 
-  // Ofrece la huella apenas aparece la pantalla.
+  // Ofrece la huella una sola vez al aparecer la pantalla, salvo que haya un aviso de error
+  // (si no, un fallo al abrir la base pediría la huella en bucle).
   useEffect(() => {
-    if (biometricEnabled) void unlockWithBiometrics();
-  }, [biometricEnabled, unlockWithBiometrics]);
+    if (!biometricEnabled || notice || prompted.current) return;
+    prompted.current = true;
+    void unlockWithBiometrics();
+  }, [biometricEnabled, notice, unlockWithBiometrics]);
 
   if (recovering) return <RecoverScreen record={record} onCancel={() => setRecovering(false)} />;
 

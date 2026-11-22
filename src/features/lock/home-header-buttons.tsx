@@ -19,7 +19,7 @@ export function HomeHeaderButtons() {
         accessibilityRole="button"
         accessibilityLabel="Bloquear"
         hitSlop={8}
-        onPress={lock}
+        onPress={() => lock()}
       >
         <Text style={styles.icon}>🔒</Text>
       </Pressable>

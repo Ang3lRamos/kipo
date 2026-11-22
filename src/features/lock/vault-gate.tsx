@@ -17,7 +17,13 @@ export function VaultGate({ children }: { children: (session: Session) => ReactN
   let content: ReactNode = null;
   if (state.status === 'setup') content = <SetupScreen />;
   if (state.status === 'locked') {
-    content = <UnlockScreen record={state.record} biometricEnabled={state.biometricEnabled} />;
+    content = (
+      <UnlockScreen
+        record={state.record}
+        biometricEnabled={state.biometricEnabled}
+        notice={state.notice}
+      />
+    );
   }
   if (state.status === 'unlocked') content = children(state.session);
 

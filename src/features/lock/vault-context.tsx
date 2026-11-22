@@ -18,14 +18,15 @@ import { closeSession, openSession, type Session } from './vault-actions';
 export type VaultState =
   | { status: 'loading' }
   | { status: 'setup' }
-  | { status: 'locked'; record: VaultRecord; biometricEnabled: boolean }
+  | { status: 'locked'; record: VaultRecord; biometricEnabled: boolean; notice?: string }
   | { status: 'unlocked'; session: Session; biometricEnabled: boolean };
 
 type VaultContextValue = {
   state: VaultState;
   unlock: (session: Session) => void;
   unlockWithBiometrics: () => Promise<boolean>;
-  lock: () => void;
+  // `notice` se muestra en la pantalla de bloqueo (por ejemplo, si falló abrir la base).
+  lock: (notice?: string) => void;
   updateRecord: (record: VaultRecord) => void;
   setBiometric: (enabled: boolean) => Promise<void>;
 };
@@ -54,7 +55,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const lock = useCallback(() => {
+  const lock = useCallback((notice?: string) => {
     clearDecryptedImages();
     wipeDecryptedCache();
     setState((current) => {
@@ -64,6 +65,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
         status: 'locked',
         record: current.session.record,
         biometricEnabled: current.biometricEnabled,
+        ...(notice ? { notice } : {}),
       };
     });
   }, []);
