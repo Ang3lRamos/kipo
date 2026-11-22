@@ -21,6 +21,13 @@ export class WrongRecoveryKeyError extends Error {
   }
 }
 
+export class KeyWipedError extends Error {
+  constructor() {
+    super('La bóveda se bloqueó durante la operación; vuelve a intentarlo');
+    this.name = 'KeyWipedError';
+  }
+}
+
 export class InvalidRecoveryKeyError extends Error {
   constructor() {
     super('La clave de recuperación está incompleta o tiene un error de digitación');

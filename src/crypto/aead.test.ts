@@ -1,5 +1,5 @@
 import { open, seal } from './aead';
-import { DecryptionError } from './errors';
+import { DecryptionError, KeyWipedError } from './errors';
 import { nodePrimitives as crypto } from './testing/node-primitives';
 
 const key = crypto.randomBytes(32);
@@ -49,6 +49,13 @@ describe('AES-256-GCM (seal/open)', () => {
     const sealed = seal(crypto, key, plaintext, aad);
     expect(() => open(crypto, crypto.randomBytes(32), sealed, aad)).toThrow(DecryptionError);
     expect(() => open(crypto, key, sealed, 'kipo/otro/v1')).toThrow(DecryptionError);
+  });
+
+  it('rechaza una llave borrada (puros ceros) para no dañar datos', () => {
+    const wiped = new Uint8Array(32);
+    expect(() => seal(crypto, wiped, plaintext, aad)).toThrow(KeyWipedError);
+    const sealed = seal(crypto, key, plaintext, aad);
+    expect(() => open(crypto, wiped, sealed, aad)).toThrow(KeyWipedError);
   });
 
   it('exige llaves de 32 bytes', () => {

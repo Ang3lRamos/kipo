@@ -1,5 +1,5 @@
 import { assertLength, concatBytes, utf8 } from './bytes';
-import { DecryptionError } from './errors';
+import { DecryptionError, KeyWipedError } from './errors';
 import { gcmTagLength, type CryptoPrimitives } from './primitives';
 
 // Formato de todo lo que Kipo cifra:  [versión 1 byte][nonce 12 bytes][cifrado][etiqueta 16]
@@ -12,13 +12,20 @@ const formatVersion = 1;
 const nonceLength = 12;
 const keyLength = 32;
 
+// Una llave de puros ceros solo aparece si se borró al bloquear mientras una operación
+// seguía en curso. Cifrar con ella dañaría los datos en silencio, así que se rechaza.
+export function assertUsableKey(key: Uint8Array): void {
+  assertLength(key, keyLength, 'La llave');
+  if (key.every((byte) => byte === 0)) throw new KeyWipedError();
+}
+
 export function seal(
   crypto: CryptoPrimitives,
   key: Uint8Array,
   plaintext: Uint8Array,
   aad: string,
 ): Uint8Array {
-  assertLength(key, keyLength, 'La llave');
+  assertUsableKey(key);
   const nonce = crypto.randomBytes(nonceLength);
   const body = crypto.aesGcmEncrypt(key, nonce, plaintext, utf8(aad));
   return concatBytes(Uint8Array.of(formatVersion), nonce, body);
@@ -30,7 +37,7 @@ export function open(
   sealed: Uint8Array,
   aad: string,
 ): Uint8Array {
-  assertLength(key, keyLength, 'La llave');
+  assertUsableKey(key);
   if (sealed.length < 1 + nonceLength + gcmTagLength || sealed[0] !== formatVersion) {
     throw new DecryptionError();
   }
