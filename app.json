@@ -20,7 +20,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.angeldev11.kipo"
+      "package": "com.angeldev11.kipo",
+      "allowBackup": false
     },
     "web": {
       "output": "server",
@@ -36,7 +37,12 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite",
+      [
+        "expo-sqlite",
+        {
+          "useSQLCipher": true
+        }
+      ],
       [
         "react-native-document-scanner-plugin",
         {
@@ -50,7 +56,16 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "react-native-quick-crypto",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Kipo usa Face ID para desbloquear tu bóveda.",
+          "configureAndroidBackup": true
+        }
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": false,

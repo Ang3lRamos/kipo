@@ -15,4 +15,19 @@ module.exports = defineConfig([
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  {
+    // Buffer y los módulos node: solo existen en las pruebas, no en el teléfono.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/**/*.test.ts', 'src/crypto/testing/**'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        { name: 'Buffer', message: 'Usa Uint8Array; Buffer no existe en React Native.' },
+      ],
+      'no-restricted-imports': [
+        'error',
+        { patterns: [{ group: ['node:*'], message: 'Los módulos de Node no existen en la app.' }] },
+      ],
+    },
+  },
 ]);
