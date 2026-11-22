@@ -18,24 +18,25 @@ function fileSize(path: string): number {
 // la llave ya viene de la DEK vía HKDF.
 export async function unlockDatabase(db: SQLiteDatabase, dbKey: Uint8Array): Promise<void> {
   assertUsableKey(dbKey);
-  await db.execAsync(`PRAGMA key = "x'${bytesToHex(dbKey)}'"`);
-
-  // Si este build no trae SQLCipher, PRAGMA key se ignora en silencio y la base quedaría en claro.
-  const cipher = await db.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version');
-  if (!cipher?.cipher_version) throw new Error('Este build no tiene SQLCipher activo');
-
+  // Diagnóstico sin datos sensibles: tamaño antes de tocar la base (0 = base nueva).
+  const sizeBefore = fileSize(db.databasePath);
+  let stage = 'PRAGMA key';
   try {
-    // Si la llave no corresponde, esta lectura falla ("file is not a database").
+    await db.execAsync(`PRAGMA key = "x'${bytesToHex(dbKey)}'"`);
+
+    // Si este build no trae SQLCipher, PRAGMA key se ignora en silencio y la base quedaría
+    // en claro. (Esta consulta ya lee la cabecera: con otra llave falla aquí.)
+    stage = 'PRAGMA cipher_version';
+    const cipher = await db.getFirstAsync<{ cipher_version: string }>('PRAGMA cipher_version');
+    if (!cipher?.cipher_version) throw new Error('este build no tiene SQLCipher activo');
+
+    stage = 'leer sqlite_master';
     await db.getFirstAsync('SELECT count(*) AS n FROM sqlite_master');
   } catch (error) {
-    // Diagnóstico sin datos sensibles: ¿la base era nueva o ya existía?
-    const size = fileSize(db.databasePath);
-    throw new Error(
-      `la llave no abre vault.db (${size} bytes, SQLCipher ${cipher.cipher_version})`,
-      {
-        cause: error,
-      },
-    );
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${message} [paso: ${stage}; vault.db tenía ${sizeBefore} bytes]`, {
+      cause: error,
+    });
   }
   await migrateDb(db);
 }
