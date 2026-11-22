@@ -1,6 +1,8 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { localFile } from '@/files/local-store';
 import type { DocumentRecord } from '@/types/document';
 import { useTheme } from '@/ui/theme';
 
@@ -22,9 +24,17 @@ export function DocumentListItem({ doc }: { doc: DocumentRecord }) {
         pressed && styles.pressed,
       ]}
     >
-      {/* Miniatura: en la fase 2 se reemplaza por la imagen del documento. */}
       <View style={[styles.thumb, { backgroundColor: theme.background }]}>
-        <Text style={styles.icon}>{info.icon}</Text>
+        {doc.thumbPath ? (
+          <Image
+            source={{ uri: localFile(doc.thumbPath).uri }}
+            style={styles.thumbImage}
+            contentFit="cover"
+            cachePolicy="memory"
+          />
+        ) : (
+          <Text style={styles.icon}>{info.icon}</Text>
+        )}
       </View>
       <View style={styles.body}>
         <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
@@ -57,7 +67,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     height: 56,
     justifyContent: 'center',
+    overflow: 'hidden',
     width: 56,
   },
+  thumbImage: { height: '100%', width: '100%' },
   title: { fontSize: 16, fontWeight: '600' },
 });

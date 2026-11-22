@@ -10,6 +10,8 @@ import { categoryInfo } from '@/features/documents/categories';
 import { formatDate } from '@/features/documents/dates';
 import { ExpiryBadge } from '@/features/documents/expiry-badge';
 import { useDocumentDetail } from '@/features/documents/use-documents';
+import { PagesSection } from '@/features/pages/pages-section';
+import { deleteDocumentFiles } from '@/files/local-store';
 import { Button } from '@/ui/button';
 import { EmptyState } from '@/ui/empty-state';
 import { InfoRow, Section } from '@/ui/section';
@@ -42,6 +44,8 @@ export default function DocumentDetailScreen() {
         style: 'destructive',
         onPress: async () => {
           await softDeleteDocument(db, doc.id);
+          // La fila queda para la sincronización; los archivos locales se borran ya.
+          deleteDocumentFiles(doc.id);
           router.back();
         },
       },
@@ -55,6 +59,8 @@ export default function DocumentDetailScreen() {
         <Text style={{ color: theme.muted }}>{`${info.icon} ${info.label}`}</Text>
         {doc.expiresAt ? <ExpiryBadge expiresAt={doc.expiresAt} /> : null}
       </View>
+
+      <PagesSection documentId={doc.id} />
 
       <Section title="Original físico">
         <Text style={[styles.location, { color: theme.text }]}>
