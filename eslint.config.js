@@ -24,6 +24,13 @@ module.exports = defineConfig([
         'error',
         { name: 'Buffer', message: 'Usa Uint8Array; Buffer no existe en React Native.' },
       ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "MemberExpression[property.name='withExclusiveTransactionAsync']",
+          message: 'Abre una conexión nueva sin la llave de SQLCipher. Usa withTransactionAsync.',
+        },
+      ],
       'no-restricted-imports': [
         'error',
         { patterns: [{ group: ['node:*'], message: 'Los módulos de Node no existen en la app.' }] },
