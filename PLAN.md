@@ -16,7 +16,7 @@ Cada fase termina con algo que funciona en tu celular. No avances de fase sin cu
 - [x] ESLint + Prettier + `tsconfig` estricto
 - [x] Jest configurado con una prueba de ejemplo
 - [x] `.gitignore` con `.env*`, llaves y builds
-- [ ] Repo privado en GitHub y primer commit
+- [x] Repo privado en GitHub y primer commit
 
 **Terminado cuando**: la app abre en tu celular con Expo Go y `npx jest` pasa.
 
