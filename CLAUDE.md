@@ -42,6 +42,7 @@ supabase/
 ## Notas del entorno
 
 - Red corporativa con inspección TLS: si el CLI de Expo falla con `self-signed certificate`, anteponer `NODE_OPTIONS=--use-system-ca` (usa los certificados de Windows; nunca desactivar la verificación TLS).
+- `typedRoutes` está apagado en `app.json`: en SDK 58 el generador (`@expo/router-server` 58.0.23) no coincide con `expo-router` 58.0.32 y los tipos de rutas no se aplican. Reactivar al actualizar el SDK.
 - Instalar paquetes con `npx expo install <paquete>` para obtener versiones compatibles con el SDK.
 
 ## Convenciones
