@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -41,13 +41,9 @@ export default function HomeScreen() {
           ]}
         />
         <CategoryPicker value={category} onChange={setCategory} allLabel="Todas" />
-        <Link href="/expiring" asChild>
-          <Pressable>
-            <Text style={[styles.link, { color: theme.primary }]}>
-              ⏰ Ver documentos por vencer
-            </Text>
-          </Pressable>
-        </Link>
+        <Pressable accessibilityRole="link" onPress={() => router.push('/expiring')}>
+          <Text style={[styles.link, { color: theme.primary }]}>⏰ Ver documentos por vencer</Text>
+        </Pressable>
       </View>
 
       <FlatList
@@ -76,14 +72,14 @@ export default function HomeScreen() {
         }
       />
 
-      <Link href="/documents/new" asChild>
-        <Pressable
-          accessibilityLabel="Nuevo documento"
-          style={[styles.fab, { backgroundColor: theme.primary }]}
-        >
-          <Text style={[styles.fabText, { color: theme.primaryText }]}>+</Text>
-        </Pressable>
-      </Link>
+      <Pressable
+        accessibilityLabel="Nuevo documento"
+        accessibilityRole="button"
+        onPress={() => router.push('/documents/new')}
+        style={[styles.fab, { backgroundColor: theme.primary }]}
+      >
+        <Text style={[styles.fabText, { color: theme.primaryText }]}>+</Text>
+      </Pressable>
     </View>
   );
 }
