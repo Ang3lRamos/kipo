@@ -1,17 +1,21 @@
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { vaultDbName } from '@/db/open-encrypted';
-import { HomeHeaderButtons } from '@/features/lock/home-header-buttons';
 import { initVaultDatabase, vaultDbOptions } from '@/features/lock/init-vault-db';
 import type { Session } from '@/features/lock/vault-actions';
 import { VaultProvider, useVault } from '@/features/lock/vault-context';
 import { VaultGate } from '@/features/lock/vault-gate';
-import { useTheme } from '@/ui/theme';
+import { useAppFonts } from '@/ui/fonts';
+import { ThemeProvider, useTheme } from '@/ui/theme-provider';
+
+// El splash sigue visible hasta tener fuentes, tema y estado de la bóveda.
+void SplashScreen.preventAutoHideAsync();
 
 function UnlockedApp({ session }: { session: Session }) {
   const theme = useTheme();
@@ -38,42 +42,47 @@ function UnlockedApp({ session }: { session: Session }) {
     >
       <Stack
         screenOptions={{
-          contentStyle: { backgroundColor: theme.background },
-          headerStyle: { backgroundColor: theme.surface },
-          headerTintColor: theme.text,
-          headerBackTitle: 'Atrás',
+          headerShown: false,
+          contentStyle: { backgroundColor: theme.colors.background },
         }}
       >
-        <Stack.Screen
-          name="index"
-          options={{ title: 'Kipo', headerRight: () => <HomeHeaderButtons /> }}
-        />
-        <Stack.Screen name="expiring" options={{ title: 'Por vencer' }} />
-        <Stack.Screen name="security" options={{ title: 'Seguridad' }} />
-        <Stack.Screen name="documents/new" options={{ title: 'Nuevo documento' }} />
-        <Stack.Screen name="documents/[id]/index" options={{ title: 'Documento' }} />
-        <Stack.Screen name="documents/[id]/edit" options={{ title: 'Editar documento' }} />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="documents/[id]/pages/[pageId]"
-          options={{
-            title: 'Página',
-            contentStyle: { backgroundColor: '#000000' },
-            headerStyle: { backgroundColor: '#000000' },
-            headerTintColor: '#ffffff',
-          }}
+          options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
         />
       </Stack>
     </SQLiteProvider>
   );
 }
 
+function AppShell() {
+  const theme = useTheme();
+  const { state } = useVault();
+  const fontsReady = useAppFonts();
+  const ready = fontsReady && state.status !== 'loading';
+
+  useEffect(() => {
+    if (ready) void SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!fontsReady) return null;
+  return (
+    <>
+      <StatusBar style={theme.mode === 'dark' ? 'light' : 'dark'} />
+      <VaultGate>{(session) => <UnlockedApp session={session} />}</VaultGate>
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
-      <StatusBar style="auto" />
-      <VaultProvider>
-        <VaultGate>{(session) => <UnlockedApp session={session} />}</VaultGate>
-      </VaultProvider>
+      <ThemeProvider>
+        <VaultProvider>
+          <AppShell />
+        </VaultProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

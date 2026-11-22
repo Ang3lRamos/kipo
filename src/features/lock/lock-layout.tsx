@@ -1,26 +1,50 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTheme } from '@/ui/theme';
+import { Kipo } from '@/ui/kipo/kipo';
+import type { KipoMood } from '@/ui/kipo/kipo-types';
+import { Logo } from '@/ui/screen';
+import { AppText } from '@/ui/text';
+import { useTheme } from '@/ui/theme-provider';
 
-type Props = { title: string; subtitle?: string; children: ReactNode };
+type Props = {
+  title: string;
+  subtitle?: string;
+  mood?: KipoMood;
+  kipoSize?: number;
+  bounceKey?: number;
+  children: ReactNode;
+};
 
-// Marco común de las pantallas de bloqueo, configuración inicial y recuperación.
-export function LockLayout({ title, subtitle, children }: Props) {
+// Marco de las pantallas de bloqueo, configuración inicial y recuperación (fondo lavanda).
+export function LockLayout({
+  title,
+  subtitle,
+  mood = 'feliz',
+  kipoSize = 140,
+  bounceKey,
+  children,
+}: Props) {
   const theme = useTheme();
+  const { location } = theme.colors;
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: location.bg }]}>
       <KeyboardAvoidingView
         style={styles.screen}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Text style={styles.logo}>🔐</Text>
-            <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
+            <Logo />
+            <Kipo mood={mood} size={kipoSize} bounceKey={bounceKey ?? 0} />
+            <AppText variant="h1" color={location.text} align="center">
+              {title}
+            </AppText>
             {subtitle ? (
-              <Text style={[styles.subtitle, { color: theme.muted }]}>{subtitle}</Text>
+              <AppText color={location.text} align="center" style={styles.subtitle}>
+                {subtitle}
+              </AppText>
             ) : null}
           </View>
           {children}
@@ -32,9 +56,7 @@ export function LockLayout({ title, subtitle, children }: Props) {
 
 const styles = StyleSheet.create({
   content: { flexGrow: 1, gap: 16, justifyContent: 'center', padding: 24 },
-  header: { alignItems: 'center', gap: 8, marginBottom: 8 },
-  logo: { fontSize: 44 },
+  header: { alignItems: 'center', gap: 12, marginBottom: 8 },
   screen: { flex: 1 },
-  subtitle: { fontSize: 15, lineHeight: 21, textAlign: 'center' },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center' },
+  subtitle: { opacity: 0.85 },
 });

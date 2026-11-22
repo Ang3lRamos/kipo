@@ -39,6 +39,8 @@ export function RecoverScreen({ record, onCancel }: Props) {
     <LockLayout
       title="Recuperar acceso"
       subtitle="Escribe la clave de recuperación que anotaste y elige una contraseña maestra nueva."
+      mood="buscando"
+      kipoSize={110}
     >
       <TextField
         label="Clave de recuperación"
@@ -51,7 +53,7 @@ export function RecoverScreen({ record, onCancel }: Props) {
         error={error}
       />
       <NewPasswordForm submitLabel="Recuperar y desbloquear" busy={busy} onSubmit={submit} />
-      <Button label="Volver" variant="secondary" onPress={onCancel} />
+      <Button label="Volver" variant="ghost" onPress={onCancel} />
     </LockLayout>
   );
 }

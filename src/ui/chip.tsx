@@ -1,32 +1,49 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
-import { useTheme } from './theme';
+import { AppText } from './text';
+import { useTheme } from './theme-provider';
 
-type Props = { label: string; selected: boolean; onPress: () => void };
+type Props = {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  // Colores pastel de la categoría; si no se dan, se usa el color principal del tema.
+  tint?: { bg: string; text: string };
+  icon?: LucideIcon;
+};
 
-export function Chip({ label, selected, onPress }: Props) {
+export function Chip({ label, selected, onPress, tint, icon: Icon }: Props) {
   const theme = useTheme();
+  const { colors } = theme;
+  const active = tint ?? { bg: colors.primary, text: colors.onPrimary };
+  const fg = selected ? active.text : colors.text;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
       onPress={onPress}
+      hitSlop={{ top: 4, bottom: 4 }}
       style={[
         styles.chip,
-        {
-          backgroundColor: selected ? theme.primary : theme.surface,
-          borderColor: selected ? theme.primary : theme.border,
-        },
+        { backgroundColor: selected ? active.bg : colors.surface, borderRadius: theme.radius.pill },
+        !selected && theme.shadow.card,
       ]}
     >
-      <Text style={[styles.label, { color: selected ? theme.primaryText : theme.text }]}>
+      {Icon ? <Icon color={fg} size={16} strokeWidth={2} /> : null}
+      <AppText variant="label" color={fg}>
         {label}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  chip: { borderRadius: 999, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 6 },
-  label: { fontSize: 14, fontWeight: '500' },
+  chip: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    minHeight: 36,
+    paddingHorizontal: 14,
+  },
 });

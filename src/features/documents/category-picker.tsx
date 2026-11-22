@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import { categories, type Category } from '@/types/document';
 import { Chip } from '@/ui/chip';
+import { useTheme } from '@/ui/theme-provider';
 
 import { categoryInfo } from './categories';
 
@@ -12,7 +13,9 @@ type Props<T extends Category | null> = {
   allLabel?: string;
 };
 
+// Chips de colores por categoría, en fila con scroll horizontal.
 export function CategoryPicker<T extends Category | null>({ value, onChange, allLabel }: Props<T>) {
+  const theme = useTheme();
   return (
     <ScrollView
       horizontal
@@ -26,7 +29,9 @@ export function CategoryPicker<T extends Category | null>({ value, onChange, all
       {categories.map((category) => (
         <Chip
           key={category}
-          label={`${categoryInfo[category].icon} ${categoryInfo[category].label}`}
+          label={categoryInfo[category].label}
+          icon={categoryInfo[category].icon}
+          tint={theme.colors.categories[category]}
           selected={value === category}
           onPress={() => onChange(category as T)}
         />
@@ -36,5 +41,6 @@ export function CategoryPicker<T extends Category | null>({ value, onChange, all
 }
 
 const styles = StyleSheet.create({
-  row: { gap: 8, paddingVertical: 4 },
+  // Margen para que la sombra de los chips no se recorte.
+  row: { gap: 8, paddingHorizontal: 2, paddingVertical: 6 },
 });

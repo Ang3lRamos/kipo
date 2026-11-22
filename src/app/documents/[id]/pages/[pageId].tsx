@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
+import { FileText } from 'lucide-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { suspendAutoLock } from '@/features/lock/auto-lock-guard';
 import { useSession } from '@/features/lock/vault-context';
@@ -10,9 +11,13 @@ import { ZoomableImage } from '@/features/pages/zoomable-image';
 import { decryptPdfToTemp } from '@/files/encrypted-store';
 import { Button } from '@/ui/button';
 import { EmptyState } from '@/ui/empty-state';
+import { Screen, ScreenHeader } from '@/ui/screen';
+import { AppText } from '@/ui/text';
+import { useTheme } from '@/ui/theme-provider';
 
 export default function PageViewerScreen() {
   const { pageId } = useLocalSearchParams<{ id: string; pageId: string }>();
+  const theme = useTheme();
   const { keys } = useSession();
   const { data: page, loading } = usePage(pageId);
   const isPdf = page?.mimeType === 'application/pdf';
@@ -20,7 +25,7 @@ export default function PageViewerScreen() {
   const [opening, setOpening] = useState(false);
 
   if (loading) return null;
-  if (!page) return <EmptyState title="Esta página ya no existe" />;
+  if (!page) return <EmptyState mood="buscando" title="Esta página ya no existe" />;
 
   if (isPdf) {
     const openPdf = async () => {
@@ -37,22 +42,39 @@ export default function PageViewerScreen() {
       }
     };
     return (
-      <EmptyState title="Documento PDF" message="Se abre con el visor del teléfono.">
-        <Button label={opening ? 'Abriendo…' : 'Abrir PDF'} onPress={openPdf} disabled={opening} />
-      </EmptyState>
+      <Screen>
+        <ScreenHeader title="PDF" />
+        <View style={styles.pdf}>
+          <FileText color={theme.colors.accentText} size={56} strokeWidth={1.6} />
+          <AppText color="textMuted" align="center">
+            Se abre con el visor de PDF del teléfono.
+          </AppText>
+          <Button label="Abrir PDF" onPress={openPdf} loading={opening} disabled={opening} />
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <View style={styles.screen}>
-      {imageUri ? <ZoomableImage uri={imageUri} /> : <ActivityIndicator style={styles.loader} />}
-      <Text style={styles.hint}>Pellizca para acercar · doble toque para alternar</Text>
-    </View>
+    <Screen background={theme.viewer.background}>
+      <ScreenHeader title="Página" />
+      <View style={styles.viewer}>
+        {imageUri ? (
+          <ZoomableImage uri={imageUri} />
+        ) : (
+          <ActivityIndicator style={styles.loader} color={theme.viewer.hint} />
+        )}
+      </View>
+      <AppText variant="small" color={theme.viewer.hint} align="center" style={styles.hint}>
+        Pellizca para acercar · doble toque para alternar
+      </AppText>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  hint: { color: '#9ca3af', fontSize: 12, paddingBottom: 24, textAlign: 'center' },
+  hint: { paddingBottom: 24 },
   loader: { flex: 1 },
-  screen: { backgroundColor: '#000000', flex: 1, overflow: 'hidden' },
+  pdf: { alignItems: 'center', flex: 1, gap: 16, justifyContent: 'center', padding: 24 },
+  viewer: { flex: 1, overflow: 'hidden' },
 });

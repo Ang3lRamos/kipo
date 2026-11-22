@@ -1,6 +1,7 @@
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
-import { useTheme } from './theme';
+import { AppText } from './text';
+import { useTheme } from './theme-provider';
 
 type Props = Omit<TextInputProps, 'style'> & {
   label: string;
@@ -10,27 +11,37 @@ type Props = Omit<TextInputProps, 'style'> & {
 
 export function TextField({ label, error, hint, multiline, ...inputProps }: Props) {
   const theme = useTheme();
+  const { colors } = theme;
   return (
     <View style={styles.field}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+      <AppText variant="label">{label}</AppText>
       <TextInput
         {...inputProps}
+        accessibilityLabel={label}
         multiline={multiline ?? false}
-        placeholderTextColor={theme.muted}
+        placeholderTextColor={colors.textMuted}
         style={[
           styles.input,
-          multiline && styles.multiline,
           {
-            backgroundColor: theme.surface,
-            borderColor: error ? theme.danger : theme.border,
-            color: theme.text,
+            backgroundColor: colors.surface,
+            borderColor: error ? colors.danger.text : colors.border,
+            borderRadius: theme.radius.md,
+            color: colors.text,
+            fontFamily: theme.font.body,
+            fontSize: theme.size.input, // 16 px: evita el zoom automático de iOS
+            minHeight: multiline ? 96 : theme.touch.button,
           },
+          multiline && styles.multiline,
         ]}
       />
       {error ? (
-        <Text style={[styles.helper, { color: theme.danger }]}>{error}</Text>
+        <AppText variant="small" color={colors.danger.text}>
+          {error}
+        </AppText>
       ) : hint ? (
-        <Text style={[styles.helper, { color: theme.muted }]}>{hint}</Text>
+        <AppText variant="small" color="textMuted">
+          {hint}
+        </AppText>
       ) : null}
     </View>
   );
@@ -38,14 +49,6 @@ export function TextField({ label, error, hint, multiline, ...inputProps }: Prop
 
 const styles = StyleSheet.create({
   field: { gap: 6 },
-  helper: { fontSize: 13 },
-  input: {
-    borderRadius: 10,
-    borderWidth: 1,
-    fontSize: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  label: { fontSize: 14, fontWeight: '600' },
-  multiline: { minHeight: 96, textAlignVertical: 'top' },
+  input: { borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12 },
+  multiline: { textAlignVertical: 'top' },
 });

@@ -1,19 +1,22 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
+import { ScanLine } from 'lucide-react-native';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
-import { CategoryPicker } from '@/features/documents/category-picker';
 import { DocumentListItem } from '@/features/documents/document-list-item';
 import { insertSampleDocuments } from '@/features/documents/sample-documents';
 import { useDocumentList } from '@/features/documents/use-documents';
+import { ExpiringSummary } from '@/features/home/expiring-summary';
+import { HomeHeader } from '@/features/home/home-header';
 import type { Category } from '@/types/document';
 import { Button } from '@/ui/button';
 import { EmptyState } from '@/ui/empty-state';
-import { useTheme } from '@/ui/theme';
+import { Fab } from '@/ui/fab';
+import { Screen } from '@/ui/screen';
+import { AppText } from '@/ui/text';
 
 export default function HomeScreen() {
-  const theme = useTheme();
   const db = useSQLiteContext();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category | null>(null);
@@ -25,87 +28,59 @@ export default function HomeScreen() {
     reload();
   };
 
-  return (
-    <View style={styles.screen}>
-      <View style={styles.header}>
-        <TextInput
-          placeholder="Buscar por nombre, etiqueta o ubicación"
-          placeholderTextColor={theme.muted}
-          value={query}
-          onChangeText={setQuery}
-          clearButtonMode="while-editing"
-          autoCorrect={false}
-          style={[
-            styles.search,
-            { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text },
-          ]}
-        />
-        <CategoryPicker value={category} onChange={setCategory} allLabel="Todas" />
-        <Pressable accessibilityRole="link" onPress={() => router.push('/expiring')}>
-          <Text style={[styles.link, { color: theme.primary }]}>⏰ Ver documentos por vencer</Text>
-        </Pressable>
-      </View>
+  const header = (
+    <View style={styles.header}>
+      <HomeHeader
+        query={query}
+        onQueryChange={setQuery}
+        category={category}
+        onCategoryChange={setCategory}
+      />
+      {filtering ? null : <ExpiringSummary />}
+      {docs.length > 0 ? (
+        <AppText variant="h3">{filtering ? 'Resultados' : 'Recientes'}</AppText>
+      ) : null}
+    </View>
+  );
 
+  const empty = loading ? undefined : filtering ? (
+    <EmptyState
+      mood="buscando"
+      title="No encontré nada"
+      message="Prueba con otra palabra o categoría."
+    />
+  ) : (
+    <EmptyState
+      title="Aún no tienes documentos"
+      message="Escanea el primero con el botón de abajo."
+    >
+      {__DEV__ ? (
+        <Button label="Cargar 10 documentos de prueba" variant="secondary" onPress={loadSamples} />
+      ) : null}
+    </EmptyState>
+  );
+
+  return (
+    <Screen>
       <FlatList
         data={docs}
         keyExtractor={(doc) => doc.id}
         renderItem={({ item }) => <DocumentListItem doc={item} />}
+        ListHeaderComponent={header}
+        ListEmptyComponent={empty}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          loading ? undefined : filtering ? (
-            <EmptyState title="Sin resultados" message="Prueba con otra palabra o categoría." />
-          ) : (
-            <EmptyState
-              title="Aún no tienes documentos"
-              message="Agrega el primero con el botón +."
-            >
-              {__DEV__ ? (
-                <Button
-                  label="Cargar 10 documentos de prueba"
-                  variant="secondary"
-                  onPress={loadSamples}
-                />
-              ) : null}
-            </EmptyState>
-          )
-        }
       />
-
-      <Pressable
-        accessibilityLabel="Nuevo documento"
-        accessibilityRole="button"
-        onPress={() => router.push('/documents/new')}
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-      >
-        <Text style={[styles.fabText, { color: theme.primaryText }]}>+</Text>
-      </Pressable>
-    </View>
+      <Fab
+        label="Escanear"
+        icon={ScanLine}
+        onPress={() => router.push({ pathname: '/documents/new', params: { scan: '1' } })}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    alignItems: 'center',
-    borderRadius: 28,
-    bottom: 32,
-    elevation: 4,
-    height: 56,
-    justifyContent: 'center',
-    position: 'absolute',
-    right: 24,
-    width: 56,
-  },
-  fabText: { fontSize: 30, lineHeight: 34 },
-  header: { gap: 10, paddingHorizontal: 16, paddingTop: 12 },
-  link: { fontSize: 15, fontWeight: '600', paddingVertical: 4 },
-  list: { gap: 10, padding: 16, paddingBottom: 120 },
-  screen: { flex: 1 },
-  search: {
-    borderRadius: 12,
-    borderWidth: 1,
-    fontSize: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
+  header: { gap: 20, marginBottom: 4 },
+  list: { gap: 10, padding: 16, paddingBottom: 96 },
 });

@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import { wipe } from '@/crypto/bytes';
 import { formatRecoveryKey } from '@/crypto/recovery-key';
 import type { VaultRecord } from '@/crypto/vault';
 import { canUseBiometrics, enableBiometricUnlock } from '@/crypto/vault-store';
+import { ThemePicker } from '@/features/theme/theme-picker';
 import { Button } from '@/ui/button';
+import { Screen } from '@/ui/screen';
+import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
-import { useTheme } from '@/ui/theme';
 
 import { LockLayout } from './lock-layout';
 import { NewPasswordForm } from './new-password-form';
@@ -16,10 +18,9 @@ import { openSession, persistVault, prepareVault } from './vault-actions';
 import { useVault } from './vault-context';
 
 type Draft = { record: VaultRecord; dek: Uint8Array; recoveryText: string };
-type Step = 'intro' | 'password' | 'recovery' | 'confirm' | 'biometrics';
+type Step = 'intro' | 'password' | 'recovery' | 'confirm' | 'biometrics' | 'theme';
 
 export function SetupScreen() {
-  const theme = useTheme();
   const { unlock } = useVault();
   const [step, setStep] = useState<Step>('intro');
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -46,20 +47,18 @@ export function SetupScreen() {
       return setError('No coincide. Revisa lo que anotaste.');
     }
     await persistVault(draft.record); // solo ahora queda guardada la bóveda
-    if (canUseBiometrics()) setStep('biometrics');
-    else await finish(false);
+    setStep(canUseBiometrics() ? 'biometrics' : 'theme');
   };
 
-  const finish = async (withBiometrics = false) => {
-    if (!draft) return;
-    if (withBiometrics) {
+  const chooseBiometrics = async (enable: boolean) => {
+    if (draft && enable) {
       try {
         await enableBiometricUnlock(draft.dek);
       } catch (e) {
         console.warn('No se activó la huella', e);
       }
     }
-    unlock(openSession(draft.dek, draft.record));
+    setStep('theme');
   };
 
   if (step === 'intro') {
@@ -78,6 +77,8 @@ export function SetupScreen() {
       <LockLayout
         title="Contraseña maestra"
         subtitle="Usa una frase larga que puedas recordar, distinta de tus otras contraseñas."
+        mood="buscando"
+        kipoSize={110}
       >
         <NewPasswordForm submitLabel="Continuar" busy={busy} onSubmit={createDraft} />
       </LockLayout>
@@ -89,6 +90,7 @@ export function SetupScreen() {
       <LockLayout
         title="Clave de recuperación"
         subtitle="Anótala en papel y guárdala con tus documentos importantes. Es la única forma de entrar si olvidas la contraseña. No le tomes foto."
+        kipoSize={100}
       >
         <RecoveryKeyView formatted={draft.recoveryText} />
         <Button label="Ya la anoté" onPress={() => setStep('confirm')} />
@@ -98,7 +100,12 @@ export function SetupScreen() {
 
   if (step === 'confirm') {
     return (
-      <LockLayout title="Confirma la clave" subtitle="Escribe el último grupo de 4 caracteres.">
+      <LockLayout
+        title="Confirma la clave"
+        subtitle="Escribe el último grupo de 4 caracteres."
+        mood="buscando"
+        kipoSize={100}
+      >
         <TextField
           label="Último grupo"
           value={typed}
@@ -108,25 +115,35 @@ export function SetupScreen() {
           error={error}
         />
         <Button label="Confirmar" onPress={confirmRecovery} />
-        <Button
-          label="Ver la clave otra vez"
-          variant="secondary"
-          onPress={() => setStep('recovery')}
-        />
+        <Button label="Ver la clave otra vez" variant="ghost" onPress={() => setStep('recovery')} />
+      </LockLayout>
+    );
+  }
+
+  if (step === 'biometrics') {
+    return (
+      <LockLayout
+        title="Desbloqueo con huella"
+        subtitle="Puedes abrir Kipo con tu huella en lugar de escribir la contraseña cada vez."
+      >
+        <Button label="Activar huella" onPress={() => chooseBiometrics(true)} />
+        <Button label="Ahora no" variant="ghost" onPress={() => chooseBiometrics(false)} />
+        <AppText variant="small" align="center" color="textMuted">
+          Puedes cambiarlo después en Ajustes.
+        </AppText>
       </LockLayout>
     );
   }
 
   return (
-    <LockLayout
-      title="Desbloqueo con huella"
-      subtitle="Puedes abrir Kipo con tu huella en lugar de escribir la contraseña cada vez."
-    >
-      <Button label="Activar huella" onPress={() => finish(true)} />
-      <Button label="Ahora no" variant="secondary" onPress={() => finish(false)} />
-      <Text style={{ color: theme.muted, textAlign: 'center' }}>
-        Puedes cambiarlo después en Seguridad.
-      </Text>
-    </LockLayout>
+    <Screen>
+      <ScrollView contentContainerStyle={styles.theme}>
+        <ThemePicker onDone={() => unlock(openSession(draft.dek, draft.record))} />
+      </ScrollView>
+    </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  theme: { padding: 24 },
+});

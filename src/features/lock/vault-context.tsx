@@ -24,7 +24,8 @@ export type VaultState =
 type VaultContextValue = {
   state: VaultState;
   unlock: (session: Session) => void;
-  unlockWithBiometrics: () => Promise<boolean>;
+  // Pide la huella y devuelve la sesión sin abrirla (la pantalla anima a Kipo y luego llama a unlock).
+  biometricSession: () => Promise<Session | null>;
   // `notice` se muestra en la pantalla de bloqueo (por ejemplo, si falló abrir la base).
   lock: (notice?: string) => void;
   updateRecord: (record: VaultRecord) => void;
@@ -70,13 +71,11 @@ export function VaultProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const unlockWithBiometrics = useCallback(async () => {
-    if (state.status !== 'locked') return false;
+  const biometricSession = useCallback(async () => {
+    if (state.status !== 'locked') return null;
     const dek = await loadBiometricDek();
-    if (!dek) return false;
-    unlock(openSession(dek, state.record));
-    return true;
-  }, [state, unlock]);
+    return dek ? openSession(dek, state.record) : null;
+  }, [state]);
 
   const updateRecord = useCallback((record: VaultRecord) => {
     setState((current) =>
@@ -97,8 +96,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ state, unlock, unlockWithBiometrics, lock, updateRecord, setBiometric }),
-    [state, unlock, unlockWithBiometrics, lock, updateRecord, setBiometric],
+    () => ({ state, unlock, biometricSession, lock, updateRecord, setBiometric }),
+    [state, unlock, biometricSession, lock, updateRecord, setBiometric],
   );
   return <VaultContext.Provider value={value}>{children}</VaultContext.Provider>;
 }

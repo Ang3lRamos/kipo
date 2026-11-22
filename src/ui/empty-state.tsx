@@ -1,16 +1,24 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { useTheme } from './theme';
+import { Kipo } from './kipo/kipo';
+import type { KipoMood } from './kipo/kipo-types';
+import { AppText } from './text';
 
-type Props = { title: string; message?: string; children?: ReactNode };
+type Props = { title: string; message?: string; mood?: KipoMood; children?: ReactNode };
 
-export function EmptyState({ title, message, children }: Props) {
-  const theme = useTheme();
+export function EmptyState({ title, message, mood = 'feliz', children }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-      {message ? <Text style={[styles.message, { color: theme.muted }]}>{message}</Text> : null}
+      <Kipo mood={mood} size={110} />
+      <AppText variant="h3" align="center">
+        {title}
+      </AppText>
+      {message ? (
+        <AppText color="textMuted" align="center">
+          {message}
+        </AppText>
+      ) : null}
       {children}
     </View>
   );
@@ -18,6 +26,4 @@ export function EmptyState({ title, message, children }: Props) {
 
 const styles = StyleSheet.create({
   container: { alignItems: 'center', gap: 12, padding: 32 },
-  message: { fontSize: 15, textAlign: 'center' },
-  title: { fontSize: 18, fontWeight: '600', textAlign: 'center' },
 });

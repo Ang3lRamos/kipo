@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/ui/button';
+import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
-import { useTheme } from '@/ui/theme';
+import { useTheme } from '@/ui/theme-provider';
 
 import { minAcceptableScore, rateMasterPassword } from './password-strength';
 
@@ -21,7 +22,8 @@ export function NewPasswordForm({ submitLabel, busy, onSubmit }: Props) {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | undefined>();
   const strength = rateMasterPassword(password);
-  const colors = [theme.danger, theme.danger, theme.warning, theme.primary, theme.primary];
+  const { colors: c } = theme;
+  const colors = [c.danger.text, c.danger.text, c.warning.text, c.accentText, c.accentText];
 
   const submit = () => {
     if (strength.score < minAcceptableScore) return setError(strength.hint);
@@ -50,14 +52,15 @@ export function NewPasswordForm({ submitLabel, busy, onSubmit }: Props) {
                 style={[
                   styles.bar,
                   {
-                    backgroundColor:
-                      strength.score >= level ? colors[strength.score] : theme.border,
+                    backgroundColor: strength.score >= level ? colors[strength.score] : c.border,
                   },
                 ]}
               />
             ))}
           </View>
-          <Text style={{ color: theme.muted }}>{`${strength.label}. ${strength.hint}`}</Text>
+          <AppText variant="small" color="textMuted">
+            {`${strength.label}. ${strength.hint}`}
+          </AppText>
         </View>
       ) : null}
       <TextField
@@ -70,7 +73,7 @@ export function NewPasswordForm({ submitLabel, busy, onSubmit }: Props) {
         textContentType="newPassword"
         error={error}
       />
-      <Button label={busy ? 'Protegiendo…' : submitLabel} onPress={submit} disabled={busy} />
+      <Button label={busy ? 'Protegiendo…' : submitLabel} onPress={submit} loading={busy} />
     </View>
   );
 }

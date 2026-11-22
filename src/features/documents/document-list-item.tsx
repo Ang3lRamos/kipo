@@ -1,51 +1,47 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { MapPin } from 'lucide-react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { useDecryptedImage } from '@/features/pages/use-decrypted-image';
-import { pageIdFromThumbPath } from '@/files/storage-paths';
 import type { DocumentRecord } from '@/types/document';
-import { useTheme } from '@/ui/theme';
+import { AppText } from '@/ui/text';
+import { useTheme } from '@/ui/theme-provider';
 
 import { categoryInfo } from './categories';
+import { DocumentThumb } from './document-thumb';
 import { ExpiryBadge } from './expiry-badge';
 
+export function openDocument(id: string) {
+  router.push({ pathname: '/documents/[id]', params: { id } });
+}
+
+// Tarjeta de "Recientes": miniatura, título y ubicación del original.
 export function DocumentListItem({ doc }: { doc: DocumentRecord }) {
   const theme = useTheme();
-  const info = categoryInfo[doc.category];
-  const coverPageId = doc.thumbPath ? pageIdFromThumbPath(doc.thumbPath) : null;
-  const thumbUri = useDecryptedImage(doc.thumbPath, coverPageId, 'thumb');
-
   return (
-    // Se navega con router.push: <Link asChild> no acepta estilos en arreglo en esta versión.
     <Pressable
       accessibilityRole="button"
-      onPress={() => router.push({ pathname: '/documents/[id]', params: { id: doc.id } })}
+      accessibilityLabel={doc.title}
+      onPress={() => openDocument(doc.id)}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: theme.surface, borderColor: theme.border },
+        { backgroundColor: theme.colors.surface, borderRadius: theme.radius.xl },
+        theme.shadow.card,
         pressed && styles.pressed,
       ]}
     >
-      <View style={[styles.thumb, { backgroundColor: theme.background }]}>
-        {thumbUri ? (
-          <Image
-            source={{ uri: thumbUri }}
-            style={styles.thumbImage}
-            contentFit="cover"
-            cachePolicy="none"
-          />
-        ) : (
-          <Text style={styles.icon}>{info.icon}</Text>
-        )}
-      </View>
+      <DocumentThumb doc={doc} size={56} />
       <View style={styles.body}>
-        <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>
+        <AppText variant="bodyMedium" numberOfLines={1}>
           {doc.title}
-        </Text>
-        <Text numberOfLines={1} style={[styles.meta, { color: theme.muted }]}>
-          {doc.physicalLocation ? `📍 ${doc.physicalLocation}` : info.label}
-        </Text>
+        </AppText>
+        <View style={styles.meta}>
+          {doc.physicalLocation ? (
+            <MapPin color={theme.colors.textMuted} size={14} strokeWidth={2} />
+          ) : null}
+          <AppText variant="small" color="textMuted" numberOfLines={1} style={styles.metaText}>
+            {doc.physicalLocation ?? categoryInfo[doc.category].label}
+          </AppText>
+        </View>
         {doc.expiresAt ? <ExpiryBadge expiresAt={doc.expiresAt} /> : null}
       </View>
     </Pressable>
@@ -54,25 +50,8 @@ export function DocumentListItem({ doc }: { doc: DocumentRecord }) {
 
 const styles = StyleSheet.create({
   body: { flex: 1, gap: 4 },
-  icon: { fontSize: 26 },
-  meta: { fontSize: 14 },
+  meta: { alignItems: 'center', flexDirection: 'row', gap: 4 },
+  metaText: { flex: 1 },
   pressed: { opacity: 0.7 },
-  row: {
-    alignItems: 'center',
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    flexDirection: 'row',
-    gap: 12,
-    padding: 12,
-  },
-  thumb: {
-    alignItems: 'center',
-    borderRadius: 10,
-    height: 56,
-    justifyContent: 'center',
-    overflow: 'hidden',
-    width: 56,
-  },
-  thumbImage: { height: '100%', width: '100%' },
-  title: { fontSize: 16, fontWeight: '600' },
+  row: { alignItems: 'center', flexDirection: 'row', gap: 12, padding: 12 },
 });

@@ -1,63 +1,65 @@
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FileText } from 'lucide-react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { formatBytes } from '@/files/format-bytes';
 import type { DocumentPage } from '@/types/page';
-import { useTheme } from '@/ui/theme';
+import { AppText } from '@/ui/text';
+import { useTheme } from '@/ui/theme-provider';
 
 import { useDecryptedImage } from './use-decrypted-image';
 
 type Props = {
   page: DocumentPage;
   index: number;
+  width: number;
+  height: number;
   onPress: () => void;
   onLongPress: () => void;
 };
 
-export function PageThumb({ page, index, onPress, onLongPress }: Props) {
+// Página guardada (cifrada): se descifra en memoria para mostrarla.
+export function PageThumb({ page, index, width, height, onPress, onLongPress }: Props) {
   const theme = useTheme();
-  const thumbUri = useDecryptedImage(page.thumbPath, page.id, 'thumb');
+  const isPdf = page.mimeType === 'application/pdf';
+  const thumbUri = useDecryptedImage(isPdf ? null : page.thumbPath, page.id, 'thumb');
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Página ${index + 1}`}
+      accessibilityLabel={`Página ${index + 1}, ${formatBytes(page.sizeBytes)}`}
+      accessibilityHint="Mantén presionado para eliminarla"
       onPress={onPress}
       onLongPress={onLongPress}
-      style={styles.container}
+      style={[styles.container, { width }]}
     >
       <View
-        style={[styles.frame, { backgroundColor: theme.background, borderColor: theme.border }]}
+        style={[
+          styles.frame,
+          { height, backgroundColor: theme.colors.surface, borderRadius: theme.radius.md },
+          theme.shadow.card,
+        ]}
       >
-        {page.mimeType === 'application/pdf' ? (
-          <Text style={styles.pdf}>PDF</Text>
+        {isPdf ? (
+          <FileText color={theme.colors.accentText} size={32} strokeWidth={2} />
         ) : thumbUri ? (
+          // Sin caché en disco: la miniatura descifrada no debe quedar copiada.
           <Image
             source={{ uri: thumbUri }}
             style={styles.image}
             contentFit="cover"
-            // Sin caché en disco: la miniatura descifrada no debe quedar copiada.
             cachePolicy="none"
           />
         ) : null}
       </View>
-      <Text style={[styles.caption, { color: theme.muted }]}>
+      <AppText variant="caption" color="textMuted" align="center">
         {`${index + 1} · ${formatBytes(page.sizeBytes)}`}
-      </Text>
+      </AppText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  caption: { fontSize: 12, textAlign: 'center' },
-  container: { gap: 4, width: 96 },
-  frame: {
-    alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    height: 128,
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
+  container: { gap: 6 },
+  frame: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   image: { height: '100%', width: '100%' },
-  pdf: { fontSize: 18, fontWeight: '700' },
 });

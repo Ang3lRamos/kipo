@@ -1,45 +1,73 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import type { LucideIcon } from 'lucide-react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
-import { useTheme } from './theme';
+import { AppText } from './text';
+import { useTheme } from './theme-provider';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 type Props = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: Variant;
+  icon?: LucideIcon;
   disabled?: boolean;
+  loading?: boolean;
 };
 
-export function Button({ label, onPress, variant = 'primary', disabled = false }: Props) {
+export function Button({
+  label,
+  onPress,
+  variant = 'primary',
+  icon: Icon,
+  disabled,
+  loading,
+}: Props) {
   const theme = useTheme();
-  const background =
-    variant === 'primary' ? theme.primary : variant === 'danger' ? theme.dangerBg : theme.surface;
-  const color =
-    variant === 'primary' ? theme.primaryText : variant === 'danger' ? theme.danger : theme.text;
+  const { colors } = theme;
+  const palette: Record<Variant, { bg: string; fg: string }> = {
+    primary: { bg: colors.primary, fg: colors.onPrimary },
+    secondary: { bg: colors.surface, fg: colors.text },
+    ghost: { bg: 'transparent', fg: colors.accentText },
+    danger: { bg: colors.danger.bg, fg: colors.danger.text },
+  };
+  const { bg, fg } = palette[variant];
+  const inactive = disabled || loading;
 
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
+      accessibilityState={{ disabled: !!inactive, busy: !!loading }}
+      disabled={inactive}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: background, borderColor: theme.border },
-        (pressed || disabled) && styles.dimmed,
+        {
+          backgroundColor: bg,
+          borderRadius: theme.radius.lg,
+          minHeight: variant === 'ghost' ? theme.touch.min : theme.touch.button,
+        },
+        variant === 'secondary' && theme.shadow.card,
+        (pressed || inactive) && styles.dimmed,
       ]}
     >
-      <Text style={[styles.label, { color }]}>{label}</Text>
+      <View style={styles.content}>
+        {loading ? (
+          <ActivityIndicator color={fg} />
+        ) : Icon ? (
+          <Icon color={fg} size={20} strokeWidth={2} />
+        ) : null}
+        <AppText variant="bodyMedium" color={fg} style={styles.label}>
+          {label}
+        </AppText>
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
+  button: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  content: { alignItems: 'center', flexDirection: 'row', gap: 8 },
   dimmed: { opacity: 0.6 },
-  label: { fontSize: 16, fontWeight: '600' },
+  label: { fontSize: 16 },
 });

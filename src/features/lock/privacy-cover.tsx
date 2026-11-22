@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
 
-import { useTheme } from '@/ui/theme';
+import { Kipo } from '@/ui/kipo/kipo';
+import { useTheme } from '@/ui/theme-provider';
 
 // Tapa el contenido cuando la app no está activa, para que no se vea en el selector de apps.
 // En Android además actúa FLAG_SECURE (expo-screen-capture).
@@ -18,13 +19,14 @@ export function PrivacyCover() {
 
   if (!visible) return null;
   return (
-    <View style={[StyleSheet.absoluteFill, styles.cover, { backgroundColor: theme.background }]}>
-      <Text style={styles.icon}>🔐</Text>
+    <View
+      style={[StyleSheet.absoluteFill, styles.cover, { backgroundColor: theme.colors.location.bg }]}
+    >
+      <Kipo mood="dormido" size={140} animated={false} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   cover: { alignItems: 'center', justifyContent: 'center' },
-  icon: { fontSize: 48 },
 });
