@@ -8,7 +8,9 @@
     "scheme": "kipo",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.angeldev11.kipo",
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +19,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.angeldev11.kipo"
     },
     "web": {
       "output": "server",
@@ -33,7 +36,21 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "react-native-document-scanner-plugin",
+        {
+          "cameraPermission": "Kipo usa la cámara para escanear tus documentos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kipo necesita acceso a tus fotos para adjuntarlas a un documento.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false,
