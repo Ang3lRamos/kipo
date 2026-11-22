@@ -71,16 +71,16 @@ activity_log(id, document_id, action, created_at)  -- creado, editado, visto, co
 
 A partir de aquí se usa un **development build**, porque el escáner y la cripto nativa no funcionan en Expo Go.
 
-- [ ] Android: `eas build --profile development --platform android` → instalar el APK directo (gratis, sin Play Store)
+- [x] Android: `eas build --profile development --platform android` → instalar el APK directo (gratis, sin Play Store)
 - [ ] iPhone (elige una):
   - Con Mac: `npx expo run:ios --device` con Apple ID gratis (la app caduca a los 7 días; se reinstala)
   - Sin Mac: cuenta Apple Developer (USD 99/año) + `eas device:create` y `eas build --profile development --platform ios`
   - Sin ninguna: seguir probando en iPhone solo lo que corre en Expo Go y validar lo nativo en Android
-- [ ] Escanear documento con recorte automático (`react-native-document-scanner-plugin`)
-- [ ] Elegir de la galería o adjuntar PDF (`expo-document-picker`)
-- [ ] Pipeline en `src/files`: redimensionar a 1800 px de lado largo, WebP con calidad 0.75 y miniatura de 300 px
-- [ ] Verificar que se eliminan los EXIF/GPS
-- [ ] Varias páginas por documento (tabla `document_pages`)
+- [x] Escanear documento con recorte automático (`react-native-document-scanner-plugin`)
+- [x] Elegir de la galería o adjuntar PDF (`expo-document-picker`)
+- [x] Pipeline en `src/files`: redimensionar a 1800 px de lado largo, WebP con calidad 0.75 y miniatura de 300 px
+- [x] Verificar que se eliminan los EXIF/GPS
+- [x] Varias páginas por documento (tabla `document_pages`)
 
 **Terminado cuando**: una foto de 4 MB queda en menos de 500 KB y la cédula se lee bien al hacer zoom.
 
