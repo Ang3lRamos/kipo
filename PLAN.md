@@ -204,7 +204,7 @@ Decide antes: ¿Bitwarden para las contraseñas, o construirlo tú?
 - [x] Pantalla de ajustes: tiempo de bloqueo, biometría, alertas, almacenamiento usado
 - [x] Temas elegibles: paletas Menta, Lavanda, Durazno y Cielo, más modo oscuro (claro, oscuro o según el sistema). `src/ui/themes.ts` con los tokens de cada paleta, un `ThemeProvider` y la elección guardada en SecureStore (no en SQLite: la base está cifrada). El color de la mascota sigue al tema.
 - [x] Mascota Kipo: el SVG como componente con `react-native-svg` y animaciones con `react-native-reanimated` (flotar, parpadear, despertar al desbloquear)
-- [ ] Ícono y splash
+- [x] Ícono y splash
 - [ ] `eas build --profile production`: APK o AAB en Android, TestFlight en iPhone
 - [ ] Revisión de seguridad final con una checklist (ver abajo)
 
@@ -212,11 +212,11 @@ Decide antes: ¿Bitwarden para las contraseñas, o construirlo tú?
 
 ## Checklist de seguridad (antes de guardar documentos reales)
 
-- [ ] Ningún `console.log` imprime claves, contraseñas ni contenido descifrado
-- [ ] Nonces aleatorios y únicos; las pruebas de cripto pasan
+- [x] Ningún `console.log` imprime claves, contraseñas ni contenido descifrado
+- [x] Nonces aleatorios y únicos; las pruebas de cripto pasan
 - [ ] Las políticas RLS están probadas con un segundo usuario de prueba
-- [ ] Las URLs prefirmadas expiran y solo permiten la ruta del usuario
-- [ ] Ningún secreto en el repo (`git log -p | grep -i secret`)
+- [x] Las URLs prefirmadas expiran y solo permiten la ruta del usuario
+- [x] Ningún secreto en el repo (`git log -p | grep -i secret`)
 - [ ] El kit de recuperación funciona (probado de verdad)
 - [ ] Cerraste la app con un documento abierto y se bloqueó
 
