@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Kipo } from '@/ui/kipo/kipo';
+import { KeyboardScroll } from '@/ui/keyboard-scroll';
 import type { KipoMood } from '@/ui/kipo/kipo-types';
 import { Logo } from '@/ui/screen';
 import { AppText } from '@/ui/text';
@@ -30,26 +31,21 @@ export function LockLayout({
   const { location } = theme.colors;
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: location.bg }]}>
-      <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Logo />
-            <Kipo mood={mood} size={kipoSize} bounceKey={bounceKey ?? 0} />
-            <AppText variant="h1" color={location.text} align="center">
-              {title}
+      <KeyboardScroll contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Logo />
+          <Kipo mood={mood} size={kipoSize} bounceKey={bounceKey ?? 0} />
+          <AppText variant="h1" color={location.text} align="center">
+            {title}
+          </AppText>
+          {subtitle ? (
+            <AppText color={location.text} align="center" style={styles.subtitle}>
+              {subtitle}
             </AppText>
-            {subtitle ? (
-              <AppText color={location.text} align="center" style={styles.subtitle}>
-                {subtitle}
-              </AppText>
-            ) : null}
-          </View>
-          {children}
-        </ScrollView>
-      </KeyboardAvoidingView>
+          ) : null}
+        </View>
+        {children}
+      </KeyboardScroll>
     </SafeAreaView>
   );
 }

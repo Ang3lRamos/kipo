@@ -1,6 +1,6 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { WrongPasswordError } from '@/crypto/errors';
 import { NewPasswordForm } from '@/features/lock/new-password-form';
@@ -9,6 +9,7 @@ import { useSession, useVault } from '@/features/lock/vault-context';
 import { markVaultChanged } from '@/sync/local-sync-repo';
 import { requestSync, updateSyncRecord } from '@/sync/sync-scheduler';
 import { Card } from '@/ui/card';
+import { KeyboardScroll } from '@/ui/keyboard-scroll';
 import { Screen, ScreenHeader } from '@/ui/screen';
 import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
@@ -51,7 +52,7 @@ export default function ChangePasswordScreen() {
   return (
     <Screen>
       <ScreenHeader title="Contraseña maestra" />
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <Card>
           <TextField
             label="Contraseña actual"
@@ -76,7 +77,7 @@ export default function ChangePasswordScreen() {
             {message.text}
           </AppText>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Screen>
   );
 }

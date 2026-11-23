@@ -1,5 +1,6 @@
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
+import { useRevealFocusedInput } from './keyboard-scroll';
 import { AppText } from './text';
 import { useTheme } from './theme-provider';
 
@@ -9,14 +10,19 @@ type Props = Omit<TextInputProps, 'style'> & {
   hint?: string;
 };
 
-export function TextField({ label, error, hint, multiline, ...inputProps }: Props) {
+export function TextField({ label, error, hint, multiline, onFocus, ...inputProps }: Props) {
   const theme = useTheme();
+  const reveal = useRevealFocusedInput();
   const { colors } = theme;
   return (
     <View style={styles.field}>
       <AppText variant="label">{label}</AppText>
       <TextInput
         {...inputProps}
+        onFocus={(event) => {
+          reveal(); // que el teclado no tape el campo
+          onFocus?.(event);
+        }}
         accessibilityLabel={label}
         multiline={multiline ?? false}
         placeholderTextColor={colors.textMuted}

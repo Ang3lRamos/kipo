@@ -1,10 +1,11 @@
 import { Bell, Lock, MapPin } from 'lucide-react-native';
 import { useState, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 
 import type { DocumentInput } from '@/types/document';
 import { Button } from '@/ui/button';
 import { Card } from '@/ui/card';
+import { KeyboardScroll } from '@/ui/keyboard-scroll';
 import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
 import { useTheme } from '@/ui/theme-provider';
@@ -42,7 +43,7 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <KeyboardScroll contentContainerStyle={styles.container}>
       {header}
       <TextField
         label="Título"
@@ -122,7 +123,7 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
         loading={saving}
         disabled={saving}
       />
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
