@@ -18,6 +18,7 @@ import { ReadExistingRow } from '@/features/ocr/read-existing-row';
 import { BackupFileRows } from '@/features/backup/backup-file-rows';
 import { LockSettings } from '@/features/settings/lock-settings';
 import { SettingsRow } from '@/features/settings/settings-row';
+import { StorageRow } from '@/features/settings/storage-row';
 import { describeOffsets } from '@/notifications/reminder-plan';
 import { loadReminderOffsets } from '@/notifications/sync-reminders';
 import { useFocusedQuery } from '@/ui/use-focused-query';
@@ -74,6 +75,11 @@ export default function SettingsScreen() {
             onPress={() => router.push('/cloud')}
           />
           <BackupFileRows />
+        </Card>
+
+        <Card>
+          <AppText variant="h3">Almacenamiento</AppText>
+          <StorageRow />
         </Card>
 
         <Card>
