@@ -1,6 +1,6 @@
 import type { Category, DocumentInput, DocumentRecord } from '@/types/document';
 
-import { isValidIsoDate } from './dates';
+import { dateError } from '@/ui/input-format';
 
 // Valores del formulario tal como se escriben (todo texto).
 export type FormValues = {
@@ -62,8 +62,10 @@ export function validateForm(values: FormValues): FormResult {
   const expiresAt = optional(values.expiresAt);
 
   if (values.title.trim() === '') errors.title = 'Escribe un nombre para el documento';
-  if (issuedAt && !isValidIsoDate(issuedAt)) errors.issuedAt = 'Usa el formato AAAA-MM-DD';
-  if (expiresAt && !isValidIsoDate(expiresAt)) errors.expiresAt = 'Usa el formato AAAA-MM-DD';
+  const issuedError = issuedAt ? dateError(issuedAt) : undefined;
+  const expiresError = expiresAt ? dateError(expiresAt) : undefined;
+  if (issuedError) errors.issuedAt = issuedError;
+  if (expiresError) errors.expiresAt = expiresError;
   if (issuedAt && expiresAt && !errors.issuedAt && !errors.expiresAt && expiresAt < issuedAt) {
     errors.expiresAt = 'El vencimiento no puede ser antes de la expedición';
   }

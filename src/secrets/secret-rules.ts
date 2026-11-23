@@ -1,4 +1,4 @@
-import { isValidIsoDate } from '@/features/documents/dates';
+import { dateError } from '@/ui/input-format';
 import { fold } from '@/ocr/text';
 import type { SecretData, SecretInput, SecretKind } from '@/types/secret';
 
@@ -56,8 +56,9 @@ export function validateSecret(input: SecretInput): SecretErrors {
       if (fullCardNumber.test(data[field])) errors[field] = cardMessage;
     }
   }
-  if (data.kind === 'subscription' && data.renewsAt.trim() && !isValidIsoDate(data.renewsAt)) {
-    errors.renewsAt = 'Usa el formato AAAA-MM-DD';
+  if (data.kind === 'subscription') {
+    const renewsError = dateError(data.renewsAt);
+    if (renewsError) errors.renewsAt = renewsError;
   }
   // Campos adicionales: con nombre si tienen valor, y nunca un número de tarjeta completo.
   for (const field of data.fields) {

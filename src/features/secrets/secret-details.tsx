@@ -1,5 +1,6 @@
 import { formatDate } from '@/features/documents/dates';
 import type { CustomField, SecretData } from '@/types/secret';
+import { formatMoneyInput } from '@/ui/input-format';
 
 import { SecretValueRow } from './secret-value-row';
 import { TotpView } from './totp-view';
@@ -60,7 +61,7 @@ export function SecretDetails({ data }: { data: SecretData }) {
           <CustomFields fields={data.fields} />
           <SecretValueRow
             label="Valor"
-            value={data.amount ? `${data.amount} (${data.period})` : ''}
+            value={data.amount ? `${formatMoneyInput(data.amount)} (${data.period})` : ''}
           />
           <SecretValueRow
             label="Próxima renovación"

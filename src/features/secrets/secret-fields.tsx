@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { SecretErrors } from '@/secrets/secret-rules';
 import { subscriptionPeriods, type SecretData } from '@/types/secret';
 import { Chip } from '@/ui/chip';
+import { DateField, MoneyField } from '@/ui/formatted-fields';
 import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
 
@@ -92,7 +93,12 @@ export function SecretFields({ data, errors, onChange }: Props) {
         onChange={(password) => onChange({ ...data, password })}
       />
       <TextField label="Perfil" placeholder="Ej. Angel" {...field(data, 'profile')} />
-      <TextField label="Valor" placeholder="Ej. $38.900" {...field(data, 'amount')} />
+      <MoneyField
+        label="Valor"
+        value={data.amount}
+        onChange={(amount) => onChange({ ...data, amount })}
+        error={errors.amount}
+      />
       <AppText variant="label">Se cobra</AppText>
       <View style={styles.chips}>
         {subscriptionPeriods.map((period) => (
@@ -104,7 +110,12 @@ export function SecretFields({ data, errors, onChange }: Props) {
           />
         ))}
       </View>
-      <TextField label="Próxima renovación" placeholder="AAAA-MM-DD" {...field(data, 'renewsAt')} />
+      <DateField
+        label="Próxima renovación"
+        value={data.renewsAt}
+        onChange={(renewsAt) => onChange({ ...data, renewsAt })}
+        error={errors.renewsAt}
+      />
       <TextField label="Notas" multiline {...field(data, 'notes')} />
       {extra}
     </View>

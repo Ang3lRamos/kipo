@@ -5,6 +5,7 @@ import { StyleSheet, Switch, View } from 'react-native';
 import type { DocumentInput } from '@/types/document';
 import { Button } from '@/ui/button';
 import { Card } from '@/ui/card';
+import { DateField } from '@/ui/formatted-fields';
 import { KeyboardScroll } from '@/ui/keyboard-scroll';
 import { AppText } from '@/ui/text';
 import { TextField } from '@/ui/text-field';
@@ -62,22 +63,18 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
       </View>
       <View style={styles.dates}>
         <View style={styles.dateField}>
-          <TextField
+          <DateField
             label="Vence"
-            placeholder="AAAA-MM-DD"
-            keyboardType="numbers-and-punctuation"
             value={values.expiresAt}
-            onChangeText={set('expiresAt')}
+            onChange={set('expiresAt')}
             error={errors.expiresAt}
           />
         </View>
         <View style={styles.dateField}>
-          <TextField
+          <DateField
             label="Expedición"
-            placeholder="AAAA-MM-DD"
-            keyboardType="numbers-and-punctuation"
             value={values.issuedAt}
-            onChangeText={set('issuedAt')}
+            onChange={set('issuedAt')}
             error={errors.issuedAt}
           />
         </View>
