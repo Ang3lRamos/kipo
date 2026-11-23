@@ -8,7 +8,15 @@ module.exports = defineConfig([
   prettierRecommended,
   {
     // supabase/functions es código de Deno (imports npm: y jsr:): se revisa al desplegar.
-    ignores: ['dist/*', '.expo/*', 'android/*', 'ios/*', 'supabase/functions/**', 'Nuevo/*'],
+    ignores: [
+      'dist/*',
+      '.expo/*',
+      'android/*',
+      'ios/*',
+      'supabase/functions/**',
+      'Nuevo/*',
+      'funciones-panel/*',
+    ],
   },
   {
     rules: {

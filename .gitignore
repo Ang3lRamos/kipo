@@ -55,3 +55,6 @@ supabase/.temp/
 
 # Material de diseño de trabajo (ya fusionado en DESIGN.md y src/ui)
 Nuevo/
+
+# Copias en un solo archivo de las Edge Functions para el editor web de Supabase (se generan)
+funciones-panel/
