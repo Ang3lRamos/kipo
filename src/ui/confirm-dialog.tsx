@@ -1,5 +1,5 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { Button } from './button';
 import { Kipo } from './kipo/kipo';
@@ -39,7 +39,7 @@ export function ConfirmDialog({ options, onAnswer }: Props) {
             onPress={() => onAnswer(false)}
           />
           <Animated.View
-            entering={ZoomIn.springify().damping(18)}
+            entering={FadeIn.duration(160)}
             accessibilityViewIsModal
             style={[
               styles.card,
@@ -47,7 +47,7 @@ export function ConfirmDialog({ options, onAnswer }: Props) {
               theme.shadow.float,
             ]}
           >
-            <Kipo mood={options.mood ?? 'buscando'} size={72} />
+            <Kipo mood={options.mood ?? 'buscando'} size={72} animated={false} />
             <AppText variant="h2" style={styles.center}>
               {options.title}
             </AppText>

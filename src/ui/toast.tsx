@@ -19,8 +19,8 @@ export function Toast({ message }: { message: ToastMessage | null }) {
   return (
     <Animated.View
       key={message.id}
-      entering={FadeInDown.springify().damping(16)}
-      exiting={FadeOutDown.duration(180)}
+      entering={FadeInDown.duration(180)}
+      exiting={FadeOutDown.duration(150)}
       pointerEvents="none"
       accessibilityLiveRegion="polite"
       style={[
