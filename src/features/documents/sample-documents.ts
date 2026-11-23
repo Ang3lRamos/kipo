@@ -13,6 +13,7 @@ function samples(today: string): DocumentInput[] {
     issuedAt: null,
     expiresAt: null,
     notes: null,
+    alertsEnabled: true,
     ...d,
   });
   return [

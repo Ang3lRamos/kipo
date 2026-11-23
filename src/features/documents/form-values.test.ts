@@ -38,6 +38,7 @@ describe('validateForm', () => {
         issuedAt: null,
         expiresAt: '2030-06-01',
         notes: null,
+        alertsEnabled: true,
       },
     });
   });

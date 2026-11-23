@@ -19,6 +19,7 @@ export type DocumentRow = {
   updated_at: string;
   deleted_at: string | null;
   synced_at: string | null;
+  alerts_enabled: number;
 };
 
 export function isCategory(value: string): value is Category {
@@ -53,5 +54,6 @@ export function rowToDocument(row: DocumentRow): DocumentRecord {
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
     syncedAt: row.synced_at,
+    alertsEnabled: row.alerts_enabled !== 0,
   };
 }

@@ -11,6 +11,7 @@ export type FormValues = {
   issuedAt: string;
   expiresAt: string;
   notes: string;
+  alertsEnabled: boolean;
 };
 
 export type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -25,6 +26,7 @@ export const emptyFormValues: FormValues = {
   issuedAt: '',
   expiresAt: '',
   notes: '',
+  alertsEnabled: true,
 };
 
 export function formValuesFrom(doc: DocumentRecord): FormValues {
@@ -36,6 +38,7 @@ export function formValuesFrom(doc: DocumentRecord): FormValues {
     issuedAt: doc.issuedAt ?? '',
     expiresAt: doc.expiresAt ?? '',
     notes: doc.notes ?? '',
+    alertsEnabled: doc.alertsEnabled,
   };
 }
 
@@ -77,6 +80,7 @@ export function validateForm(values: FormValues): FormResult {
       issuedAt,
       expiresAt,
       notes: optional(values.notes),
+      alertsEnabled: values.alertsEnabled,
     },
   };
 }

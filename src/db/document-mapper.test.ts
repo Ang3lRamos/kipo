@@ -18,6 +18,7 @@ const baseRow: DocumentRow = {
   updated_at: '2026-01-01T00:00:00.000Z',
   deleted_at: null,
   synced_at: null,
+  alerts_enabled: 1,
 };
 
 describe('rowToDocument', () => {

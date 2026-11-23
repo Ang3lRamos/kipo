@@ -18,6 +18,7 @@ function inputParams(input: DocumentInput): SQLiteBindValue[] {
     input.issuedAt,
     input.expiresAt,
     input.notes,
+    input.alertsEnabled ? 1 : 0,
   ];
 }
 
@@ -27,9 +28,9 @@ export async function createDocument(db: SQLiteDatabase, input: DocumentInput): 
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `INSERT INTO documents
-         (title, category, tags, physical_location, issued_at, expires_at, notes,
+         (title, category, tags, physical_location, issued_at, expires_at, notes, alerts_enabled,
           id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ...inputParams(input),
       id,
       now,
@@ -48,7 +49,7 @@ export async function updateDocument(
   await db.withTransactionAsync(async () => {
     await db.runAsync(
       `UPDATE documents SET title = ?, category = ?, tags = ?, physical_location = ?,
-         issued_at = ?, expires_at = ?, notes = ?, updated_at = ?
+         issued_at = ?, expires_at = ?, notes = ?, alerts_enabled = ?, updated_at = ?
        WHERE id = ? AND deleted_at IS NULL`,
       ...inputParams(input),
       new Date().toISOString(),
