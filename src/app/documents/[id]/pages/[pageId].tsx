@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { suspendAutoLock } from '@/features/lock/auto-lock-guard';
 import { useSession } from '@/features/lock/vault-context';
 import { useDecryptedImage } from '@/features/pages/use-decrypted-image';
+import { SharePageButton } from '@/features/pages/share-page-button';
 import { usePage } from '@/features/pages/use-pages';
 import { ZoomableImage } from '@/features/pages/zoomable-image';
 import { decryptPdfToTemp } from '@/files/encrypted-store';
@@ -49,7 +50,7 @@ export default function PageViewerScreen() {
     };
     return (
       <Screen>
-        <ScreenHeader title="PDF" />
+        <ScreenHeader title="PDF" right={<SharePageButton page={page} />} />
         <View style={styles.pdf}>
           <FileText color={theme.colors.accentText} size={56} strokeWidth={1.6} />
           <AppText color="textMuted" align="center">
@@ -63,7 +64,10 @@ export default function PageViewerScreen() {
 
   return (
     <Screen background={theme.viewer.background}>
-      <ScreenHeader title="Página" />
+      <ScreenHeader
+        title="Página"
+        right={<SharePageButton page={page} color={theme.viewer.hint} />}
+      />
       <View style={styles.viewer}>
         {imageUri ? (
           <ZoomableImage uri={imageUri} />
