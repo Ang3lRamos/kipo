@@ -58,17 +58,19 @@ export async function decryptToDataUri(
   }
 }
 
-// El visor de PDF del sistema necesita un archivo: se descifra a la caché temporal.
-export async function decryptPdfToTemp(
+// El visor de PDF del sistema y el OCR necesitan un archivo: se descifra a la caché temporal,
+// que se borra al bloquear. Quien lo pide para el OCR debe borrarlo apenas termine.
+export async function decryptToTemp(
   fileKey: Uint8Array,
   relativePath: string,
   pageId: string,
+  kind: 'page' | 'pdf',
 ): Promise<File> {
-  const bytes = await readDecrypted(fileKey, relativePath, pageId, 'pdf');
+  const bytes = await readDecrypted(fileKey, relativePath, pageId, kind);
   try {
     const dir = decryptedDir();
     dir.create({ intermediates: true, idempotent: true });
-    const file = new File(dir, `${pageId}.pdf`);
+    const file = new File(dir, `${pageId}.${kind === 'pdf' ? 'pdf' : 'webp'}`);
     file.write(bytes);
     // Referencia nueva: la anterior se creó cuando el archivo no existía y el visor la
     // rechazaba la primera vez ("File does not exist").
@@ -77,6 +79,9 @@ export async function decryptPdfToTemp(
     wipe(bytes);
   }
 }
+
+export const decryptPdfToTemp = (fileKey: Uint8Array, relativePath: string, pageId: string) =>
+  decryptToTemp(fileKey, relativePath, pageId, 'pdf');
 
 export function wipeDecryptedCache(): void {
   try {

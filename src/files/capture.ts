@@ -2,7 +2,8 @@ import { getDocumentAsync } from 'expo-document-picker';
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
 // Lo que entra al pipeline: una imagen (se comprime) o un PDF (se guarda tal cual).
-export type CapturedItem = { uri: string; kind: 'image' } | { uri: string; kind: 'pdf' };
+// ocrText: si ya se leyó antes de guardar (para las sugerencias), se reutiliza.
+export type CapturedItem = { uri: string; kind: 'image' | 'pdf'; ocrText?: string };
 
 const maxPages = 20;
 

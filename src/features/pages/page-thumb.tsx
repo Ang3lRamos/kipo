@@ -22,7 +22,8 @@ type Props = {
 export function PageThumb({ page, index, width, height, onPress, onLongPress }: Props) {
   const theme = useTheme();
   const isPdf = page.mimeType === 'application/pdf';
-  const thumbUri = useDecryptedImage(isPdf ? null : page.thumbPath, page.id, 'thumb');
+  // Desde la fase 6 los PDF también tienen miniatura (su primera página).
+  const thumbUri = useDecryptedImage(page.thumbPath, page.id, 'thumb');
   return (
     <Pressable
       accessibilityRole="button"
@@ -39,9 +40,7 @@ export function PageThumb({ page, index, width, height, onPress, onLongPress }: 
           theme.shadow.card,
         ]}
       >
-        {isPdf ? (
-          <FileText color={theme.colors.accentText} size={32} strokeWidth={2} />
-        ) : thumbUri ? (
+        {thumbUri ? (
           // Sin caché en disco: la miniatura descifrada no debe quedar copiada.
           <Image
             source={{ uri: thumbUri }}
@@ -49,6 +48,18 @@ export function PageThumb({ page, index, width, height, onPress, onLongPress }: 
             contentFit="cover"
             cachePolicy="none"
           />
+        ) : isPdf ? (
+          <FileText color={theme.colors.accentText} size={32} strokeWidth={2} />
+        ) : null}
+        {isPdf && thumbUri ? (
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: theme.colors.surface, borderRadius: theme.radius.sm },
+            ]}
+          >
+            <AppText variant="caption">PDF</AppText>
+          </View>
         ) : null}
       </View>
       <AppText variant="caption" color="textMuted" align="center">
@@ -59,6 +70,7 @@ export function PageThumb({ page, index, width, height, onPress, onLongPress }: 
 }
 
 const styles = StyleSheet.create({
+  badge: { bottom: 6, paddingHorizontal: 6, paddingVertical: 2, position: 'absolute', right: 6 },
   container: { gap: 6 },
   frame: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   image: { height: '100%', width: '100%' },
