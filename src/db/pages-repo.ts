@@ -52,7 +52,13 @@ export async function getPage(db: SQLiteDatabase, id: string): Promise<DocumentP
 }
 
 // Actualiza la portada y el tamaño total del documento a partir de sus páginas.
-export async function refreshCover(db: SQLiteDatabase, documentId: string): Promise<void> {
+// `touch: false` no cambia updated_at: se usa al aplicar cambios bajados de la nube, para
+// que el documento no parezca modificado y se vuelva a subir en un bucle.
+export async function refreshCover(
+  db: SQLiteDatabase,
+  documentId: string,
+  { touch = true }: { touch?: boolean } = {},
+): Promise<void> {
   await db.runAsync(
     `UPDATE documents SET
        thumb_path = (SELECT thumb_path FROM document_pages
@@ -62,10 +68,10 @@ export async function refreshCover(db: SQLiteDatabase, documentId: string): Prom
                     WHERE document_id = ?1 AND deleted_at IS NULL ORDER BY position LIMIT 1),
        size_bytes = (SELECT SUM(size_bytes) FROM document_pages
                      WHERE document_id = ?1 AND deleted_at IS NULL),
-       updated_at = ?2
+       updated_at = COALESCE(?2, updated_at)
      WHERE id = ?1`,
     documentId,
-    new Date().toISOString(),
+    touch ? new Date().toISOString() : null,
   );
 }
 
