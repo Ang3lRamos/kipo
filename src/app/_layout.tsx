@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -22,9 +22,17 @@ void SplashScreen.preventAutoHideAsync();
 function UnlockedApp({ session }: { session: Session }) {
   const theme = useTheme();
   const { lock } = useVault();
+  // Ref: cambiar la contraseña crea una sesión nueva con las mismas llaves; la base no debe
+  // cerrarse y reabrirse por eso.
+  const sessionRef = useRef(session);
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
   const { keys } = session;
-
-  const onInit = useCallback((db: SQLiteDatabase) => initVaultDatabase(db, keys), [keys]);
+  const onInit = useCallback(
+    (db: SQLiteDatabase) => initVaultDatabase(db, { ...sessionRef.current, keys }),
+    [keys],
+  );
 
   // SQLiteProvider llama a onError durante el render: se bloquea después, fuera del render.
   const onError = useCallback(

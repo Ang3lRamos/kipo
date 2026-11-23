@@ -1,10 +1,12 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import type { Subkeys } from '@/crypto/subkeys';
 import { migrateLegacyDatabase } from '@/db/migrate-legacy';
 import { unlockDatabase } from '@/db/open-encrypted';
 import { encryptLegacyFiles } from '@/files/migrate-legacy-files';
 import { syncReminders } from '@/notifications/sync-reminders';
+import { requestSync, setSyncContext } from '@/sync/sync-scheduler';
+
+import type { Session } from './vault-actions';
 
 // Opciones de apertura de la base cifrada. useNewConnection evita que expo-sqlite reutilice
 // una conexión en caché que ya recibió la llave: repetir PRAGMA key sobre una conexión usada
@@ -20,7 +22,8 @@ async function step<T>(name: string, run: () => Promise<T>): Promise<T> {
   }
 }
 
-export async function initVaultDatabase(db: SQLiteDatabase, keys: Subkeys): Promise<void> {
+export async function initVaultDatabase(db: SQLiteDatabase, session: Session): Promise<void> {
+  const { keys } = session;
   try {
     await step('Abrir la base cifrada', () => unlockDatabase(db, keys.dbKey));
   } catch (error) {
@@ -42,4 +45,8 @@ export async function initVaultDatabase(db: SQLiteDatabase, keys: Subkeys): Prom
   // Recalcula los avisos de vencimiento (por si cambió la fecha o se instaló de nuevo).
   // Sin await: no retrasa la apertura de la app.
   void syncReminders(db);
+
+  // Respaldo en la nube: baja cambios de otros teléfonos y sube lo pendiente.
+  setSyncContext({ db, keys, record: session.record });
+  requestSync(500);
 }

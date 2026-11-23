@@ -5,6 +5,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-na
 
 import { softDeletePage } from '@/db/pages-repo';
 import { useSession } from '@/features/lock/vault-context';
+import { afterLocalChange } from '@/sync/after-local-change';
 import type { CapturedItem } from '@/files/capture';
 import { deleteLocalFile } from '@/files/local-store';
 import type { Category } from '@/types/document';
@@ -38,6 +39,7 @@ export function PagesSection({ documentId, category }: Props) {
     } finally {
       setBusy(false);
       reload();
+      afterLocalChange(db);
     }
   };
 
@@ -52,6 +54,7 @@ export function PagesSection({ documentId, category }: Props) {
           deleteLocalFile(page.filePath);
           deleteLocalFile(page.thumbPath);
           reload();
+          afterLocalChange(db);
         },
       },
     ]);

@@ -13,7 +13,7 @@ import { LocationCard } from '@/features/documents/location-card';
 import { useDocumentDetail } from '@/features/documents/use-documents';
 import { PagesSection } from '@/features/pages/pages-section';
 import { deleteDocumentFiles } from '@/files/local-store';
-import { syncReminders } from '@/notifications/sync-reminders';
+import { afterLocalChange } from '@/sync/after-local-change';
 import { Button } from '@/ui/button';
 import { InfoRow, Section } from '@/ui/card';
 import { EmptyState } from '@/ui/empty-state';
@@ -46,7 +46,7 @@ export default function DocumentDetailScreen() {
           await softDeleteDocument(db, doc.id);
           // La fila queda para la sincronización; los archivos locales se borran ya.
           deleteDocumentFiles(doc.id);
-          void syncReminders(db); // cancela sus avisos
+          afterLocalChange(db); // cancela sus avisos y sube el borrado
           router.back();
         },
       },

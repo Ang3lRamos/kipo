@@ -1,6 +1,14 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Bell, Fingerprint, KeyRound, Lock, Palette, ShieldCheck } from 'lucide-react-native';
+import {
+  Bell,
+  Cloud,
+  Fingerprint,
+  KeyRound,
+  Lock,
+  Palette,
+  ShieldCheck,
+} from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Switch } from 'react-native';
 
@@ -49,6 +57,16 @@ export default function SettingsScreen() {
             label="Color y modo"
             detail={`${paletteLabel}, ${modeLabels[preference.mode]}`}
             onPress={() => router.push('/theme')}
+          />
+        </Card>
+
+        <Card>
+          <AppText variant="h3">Respaldo</AppText>
+          <SettingsRow
+            icon={Cloud}
+            label="Respaldo en la nube"
+            detail="Cifrado de extremo a extremo"
+            onPress={() => router.push('/cloud')}
           />
         </Card>
 

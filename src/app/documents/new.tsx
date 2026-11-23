@@ -13,7 +13,7 @@ import { importPages } from '@/features/pages/import-pages';
 import { PendingPages } from '@/features/pages/pending-pages';
 import { usePendingPages } from '@/features/pages/use-pending-pages';
 import { scanWithCamera } from '@/files/capture';
-import { syncReminders } from '@/notifications/sync-reminders';
+import { afterLocalChange } from '@/sync/after-local-change';
 import { EmptyState } from '@/ui/empty-state';
 import { Screen, ScreenHeader } from '@/ui/screen';
 import { AppText } from '@/ui/text';
@@ -68,7 +68,7 @@ export default function NewDocumentScreen() {
           const id = await createDocument(db, input);
           const { failed } = await importPages(db, keys.fileKey, id, pending.commit());
           if (failed > 0) console.warn(`${failed} páginas no se pudieron guardar`);
-          void syncReminders(db);
+          afterLocalChange(db);
           setSaved(true); // Kipo guiña un momento y luego se abre el documento
           setTimeout(() => router.replace({ pathname: '/documents/[id]', params: { id } }), 900);
         }}

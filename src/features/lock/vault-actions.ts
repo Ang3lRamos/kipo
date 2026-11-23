@@ -20,7 +20,7 @@ export function openSession(dek: Uint8Array, record: VaultRecord): Session {
 }
 
 export function closeSession(session: Session): void {
-  wipe(session.dek, session.keys.dbKey, session.keys.fileKey);
+  wipe(session.dek, session.keys.dbKey, session.keys.fileKey, session.keys.metaKey);
 }
 
 function costOf(record: VaultRecord) {

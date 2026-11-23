@@ -36,7 +36,7 @@ src/                 # alias @/* apunta aquí
   notifications/     # programación de alertas de vencimiento
   features/<x>/      # componentes y hooks por funcionalidad (lock/ = bóveda, bloqueo y desbloqueo)
   ui/                # componentes reutilizables
-docs/                # decisiones de diseño (criptografia.md)
+docs/                # decisiones de diseño (criptografia.md, nube.md)
 supabase/
   migrations/        # SQL de tablas y políticas RLS
   functions/         # Edge Functions (upload-url, download-url)
@@ -55,6 +55,7 @@ supabase/
 - Las funciones de `src/crypto` llevan pruebas unitarias (Jest): ida y vuelta, nonce único, rechazo de datos alterados.
 - Archivos en disco: solo cifrados (`src/files/encrypted-store.ts`). Imágenes descifradas solo en memoria; PDF descifrados solo en `cache/decrypted/`.
 - `Buffer` y `node:*` están prohibidos fuera de las pruebas (regla de ESLint): no existen en el teléfono.
+- Nada sale del teléfono sin cifrar: `src/sync` solo sube `payload_enc` (metaKey) y los `.bin` ya cifrados. El código de `supabase/functions` es Deno y se excluye de tsc y ESLint; su lógica pura (`_shared/object-key.ts`) sí tiene pruebas de Jest.
 - Con SQLCipher, nunca usar `withExclusiveTransactionAsync` ni abrir `vault.db` con otra conexión: expo-sqlite abre una conexión nueva sin la llave. Usar `withTransactionAsync` sobre la conexión que ya hizo `PRAGMA key`.
 - Cada cambio de esquema es una migración nueva; nunca se edita una migración ya aplicada.
 - Commits pequeños por tarea. `.env` y llaves nunca entran a git.

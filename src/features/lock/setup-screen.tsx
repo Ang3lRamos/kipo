@@ -14,11 +14,12 @@ import { TextField } from '@/ui/text-field';
 import { LockLayout } from './lock-layout';
 import { NewPasswordForm } from './new-password-form';
 import { RecoveryKeyView } from './recovery-key-view';
+import { RestoreScreen } from './restore-screen';
 import { openSession, persistVault, prepareVault } from './vault-actions';
 import { useVault } from './vault-context';
 
 type Draft = { record: VaultRecord; dek: Uint8Array; recoveryText: string };
-type Step = 'intro' | 'password' | 'recovery' | 'confirm' | 'biometrics' | 'theme';
+type Step = 'intro' | 'restore' | 'password' | 'recovery' | 'confirm' | 'biometrics' | 'theme';
 
 export function SetupScreen() {
   const { unlock } = useVault();
@@ -68,9 +69,16 @@ export function SetupScreen() {
         subtitle="Todo en Kipo se cifra con una contraseña maestra que solo tú conoces. No se guarda en ningún lado: si la olvidas y pierdes la clave de recuperación, nadie podrá recuperar tus documentos."
       >
         <Button label="Crear contraseña maestra" onPress={() => setStep('password')} />
+        <Button
+          variant="ghost"
+          label="Ya uso Kipo: restaurar desde la nube"
+          onPress={() => setStep('restore')}
+        />
       </LockLayout>
     );
   }
+
+  if (step === 'restore') return <RestoreScreen onCancel={() => setStep('intro')} />;
 
   if (step === 'password' || !draft) {
     return (

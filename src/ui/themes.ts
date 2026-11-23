@@ -179,6 +179,8 @@ export const tokens = {
   touch: { min: 44, button: 52, fab: 56 },
   // Visor de páginas: fondo negro en cualquier tema para ver el documento sin distracciones.
   viewer: { background: '#000000', hint: '#A9AEC0' },
+  // Los códigos QR necesitan fondo blanco para escanearse, también en modo oscuro.
+  qr: { background: '#FFFFFF' },
   shadow: {
     card: {
       shadowColor: '#2B2F3A',

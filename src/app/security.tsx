@@ -1,3 +1,4 @@
+import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
@@ -5,6 +6,8 @@ import { WrongPasswordError } from '@/crypto/errors';
 import { NewPasswordForm } from '@/features/lock/new-password-form';
 import { changeMasterPassword } from '@/features/lock/vault-actions';
 import { useSession, useVault } from '@/features/lock/vault-context';
+import { markVaultChanged } from '@/sync/local-sync-repo';
+import { requestSync, updateSyncRecord } from '@/sync/sync-scheduler';
 import { Card } from '@/ui/card';
 import { Screen, ScreenHeader } from '@/ui/screen';
 import { AppText } from '@/ui/text';
@@ -15,6 +18,7 @@ export default function ChangePasswordScreen() {
   const theme = useTheme();
   const session = useSession();
   const { updateRecord } = useVault();
+  const db = useSQLiteContext();
   const [current, setCurrent] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
@@ -24,7 +28,11 @@ export default function ChangePasswordScreen() {
     setBusy(true);
     setMessage(null);
     try {
-      updateRecord(await changeMasterPassword(session, current, newPassword));
+      const record = await changeMasterPassword(session, current, newPassword);
+      updateRecord(record);
+      updateSyncRecord(record);
+      await markVaultChanged(db);
+      requestSync(500);
       setMessage({ text: 'Contraseña cambiada.', ok: true });
       setCurrent('');
       setFormKey((k) => k + 1);

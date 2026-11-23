@@ -11,7 +11,8 @@ Contraseña maestra ──Argon2id + sal──► KEK (32 bytes)
 DEK (32 bytes aleatorios) ◄── envuelve ── Clave de recuperación ──HKDF──► llave de recuperación
    │
    ├─HKDF "kipo/sqlcipher/v1"─► llave de la base (SQLCipher)
-   └─HKDF "kipo/files/v1"─────► llave de archivos (AES-256-GCM)
+   ├─HKDF "kipo/files/v1"─────► llave de archivos (AES-256-GCM)
+   └─HKDF "kipo/metadata/v1"──► llave de metadatos para la nube (AES-256-GCM)
 
 SecureStore (Keystore de Android)
    ├─ registro de la bóveda: sal, parámetros de Argon2, DEK envuelta ×2  (no sirve sin la contraseña)
@@ -31,12 +32,21 @@ SecureStore (Keystore de Android)
 | Nonce | 12 bytes **aleatorios** por cada cifrado, guardados junto al dato | Nunca se reutiliza un nonce con la misma llave (las pruebas lo verifican). Con nonces aleatorios el límite seguro es ~2³² cifrados por llave, muy por encima del uso de una persona. |
 | Formato | `[versión 1 byte][nonce 12][cifrado][etiqueta 16]` | El byte de versión permite cambiar el algoritmo en el futuro sin romper datos viejos. |
 | AAD (contexto) | Cada cifrado lleva un contexto autenticado: `kipo/file/v1/thumb/<página>`, `kipo/dek-wrap/password/v1`, etc. | Liga cada dato a su uso: no se puede cambiar la miniatura de un documento por la página de otro, ni usar la DEK envuelta para otra cosa. |
-| Subllaves | **HKDF-SHA256** desde la DEK, una por uso (base, archivos) | Separación de dominios: la llave que ve SQLCipher no es la misma que cifra archivos. |
+| Subllaves | **HKDF-SHA256** desde la DEK, una por uso (base, archivos, metadatos de la nube) | Separación de dominios: la llave que ve SQLCipher no es la misma que cifra archivos. |
 | Base de datos | **SQLCipher** con llave cruda `x'…'` | La llave ya viene de HKDF; con llave cruda SQLCipher no aplica su propio PBKDF2 (que sería trabajo inútil). Cifra la base completa, incluido el índice de búsqueda FTS5. |
 | Clave de recuperación | 160 bits aleatorios + 16 bits de verificación, en base32 de Crockford (9 grupos de 4) | 160 bits no se pueden adivinar, así que no necesita Argon2: basta HKDF. Crockford evita letras confundibles (O/0, I/1/L), y la suma de verificación detecta errores al copiarla a mano. |
 | Huella | La DEK se guarda en SecureStore con `requireAuthentication` | El Keystore de Android solo la entrega tras autenticar con biometría, e invalida la llave si se registran huellas nuevas. Si falla, se usa la contraseña. |
 | Almacenamiento seguro | `WHEN_UNLOCKED_THIS_DEVICE_ONLY`, `allowBackup: false` | Las llaves no salen del teléfono en respaldos de Google ni se restauran en otro dispositivo. |
 | Primitivas | `react-native-quick-crypto` (OpenSSL) para aleatorios, Argon2id y AES-GCM; `@noble/hashes` para HKDF y SHA-256; `@scure/base` para base64/base32 | Solo librerías auditadas; no hay criptografía propia. quick-crypto replica la API de Node, así que las pruebas de Jest corren **el mismo código** sobre `node:crypto`. |
+
+## Nube (fase 5)
+
+- Cada documento sube como un solo bloque `payload_enc` = AES-256-GCM(llave de metadatos, JSON) con AAD `kipo/doc/v1/<id>`: no se puede pegar el contenido de un documento en la fila de otro.
+- Los archivos suben tal cual están en el teléfono (ya cifrados con la llave de archivos y su AAD de página).
+- `vault_keys` guarda el mismo registro que SecureStore: inútil sin la contraseña o la clave de recuperación.
+- La cuenta de Supabase (correo, contraseña y TOTP) solo da acceso a datos cifrados; su contraseña es distinta de la maestra.
+- La sesión de Supabase vive en SecureStore. Las credenciales de R2 viven solo en los secrets de las Edge Functions.
+- Detalles y configuración en `docs/nube.md`.
 
 ## Qué protege y qué no
 
