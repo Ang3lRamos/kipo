@@ -25,7 +25,7 @@ Ruta en R2: `{user_id}/{document_id}/{page_id}/{page|thumb}`. La arma la Edge Fu
 
 1. Crea un proyecto en [supabase.com](https://supabase.com) (el plan gratis alcanza).
 2. **Authentication → Sign In / Providers → Email**: activado. **Authentication → Multi-Factor**: TOTP activado (viene así por defecto).
-3. **SQL Editor**: pega y ejecuta `supabase/migrations/20261122120000_vault_and_documents.sql`.
+3. **SQL Editor**: pega y ejecuta, en orden, cada archivo de `supabase/migrations/` (vault_and_documents, grants y secrets).
    - O con la CLI: `npx supabase link --project-ref <ref>` y `npx supabase db push`.
 4. **Project Settings → API**: copia la *Project URL* y la *anon public key*.
 

@@ -54,6 +54,15 @@ SecureStore (Keystore de Android)
 - Para leer PDFs y documentos guardados antes, la página se descifra a `cache/decrypted/`, se lee y el temporal se borra de inmediato (y la carpeta se vacía al bloquear).
 - El texto se guarda por página en SQLCipher y viaja a la nube dentro de `payload_enc`, cifrado con la llave de metadatos.
 
+## Claves y notas seguras (fase 7)
+
+- Se guardan en la tabla `secrets` de la base cifrada (SQLCipher). La búsqueda usa `search_text`, que **nunca** incluye contraseñas, notas ni claves de dos pasos.
+- Suben a la nube en `secrets.payload_enc`, cifradas con la llave de metadatos y AAD `kipo/secret/v1/<id>`: no se pueden hacer pasar por un documento ni al revés. Un borrado sube sin datos.
+- Tarjetas: solo banco y últimos 4 dígitos. Se rechaza cualquier campo que parezca un número de tarjeta completo; nunca se pide el CVV.
+- Códigos de dos pasos (TOTP, RFC 6238) calculados en el teléfono con HMAC de `@noble/hashes`.
+- Generador con el CSPRNG del teléfono y muestreo por rechazo (sin sesgo por módulo).
+- Al copiar: el contenido se marca como sensible (Android 13+ no lo muestra en la vista previa) y se borra del portapapeles a los 30 s o al bloquear Kipo, solo si sigue siendo lo que Kipo copió.
+
 ## Qué protege y qué no
 
 **Protege:** si alguien copia la carpeta de la app, la base o los archivos (respaldo, teléfono robado sin desbloquear la app, la nube en la fase 5), no puede leer nada sin la contraseña o la clave de recuperación. Para adivinar la contraseña tendría que pagar ~0,75 s y 64 MiB por intento.

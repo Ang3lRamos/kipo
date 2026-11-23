@@ -34,6 +34,7 @@ src/                 # alias @/* apunta aquí
   files/             # captura, compresión, miniaturas, almacenamiento cifrado
   sync/              # cliente Supabase, subida/bajada R2, cola de sincronización
   ocr/               # OCR, PDF a imagen y sugerencias (título, categoría, fechas)
+  secrets/           # claves: TOTP, generador de contraseñas, reglas y portapapeles
   notifications/     # programación de alertas de vencimiento
   features/<x>/      # componentes y hooks por funcionalidad (lock/ = bóveda, bloqueo y desbloqueo)
   ui/                # componentes reutilizables

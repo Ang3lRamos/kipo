@@ -58,7 +58,6 @@ Fuente visual: mockup "Kipo — mockup de la app" en claude.ai. Los colores, rad
 ## Pendiente por fase
 
 - Botón "Compartir 24 h" en el detalle → fase 8.
-- Pestaña "Claves" → fase 7 (por ahora muestra "Muy pronto").
 
 ## Reglas de accesibilidad
 

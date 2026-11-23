@@ -12,6 +12,7 @@ import {
 } from '@/crypto/vault-store';
 import { wipeDecryptedCache } from '@/files/encrypted-store';
 import { clearDecryptedImages } from '@/features/pages/decrypted-image-cache';
+import { clearCopiedSecret } from '@/secrets/clipboard';
 import { clearSyncContext } from '@/sync/sync-scheduler';
 
 import { closeSession, openSession, type Session } from './vault-actions';
@@ -59,6 +60,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
   const lock = useCallback((notice?: string) => {
     clearSyncContext();
+    void clearCopiedSecret(); // una clave copiada no queda en el portapapeles al bloquear
     clearDecryptedImages();
     wipeDecryptedCache();
     setState((current) => {
