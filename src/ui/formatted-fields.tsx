@@ -1,4 +1,4 @@
-import { dateForDisplay, dateFromInput, formatMoneyInput } from './input-format';
+import { dateForDisplay, dateFromInput, formatMoneyInput, liveDateError } from './input-format';
 import { TextField } from './text-field';
 
 type Props = {
@@ -28,7 +28,8 @@ export function DateField({
       placeholder={placeholder}
       keyboardType="number-pad"
       maxLength={10}
-      error={error}
+      // Si la fecha completa no existe (31/02), se avisa al instante, sin esperar a guardar.
+      error={liveDateError(value) ?? error}
       {...(hint ? { hint } : {})}
     />
   );

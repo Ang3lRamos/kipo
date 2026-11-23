@@ -3,6 +3,7 @@ import {
   dateForDisplay,
   dateFromInput,
   formatMoneyInput,
+  liveDateError,
   maskDateInput,
 } from './input-format';
 
@@ -14,6 +15,21 @@ describe('fechas mientras se escriben', () => {
     expect(maskDateInput('1401')).toBe('14/01');
     expect(maskDateInput('14012027')).toBe('14/01/2027');
     expect(maskDateInput('14/01/20279')).toBe('14/01/2027'); // no pasa de 8 dígitos
+  });
+
+  it('no deja escribir días ni meses imposibles', () => {
+    expect(maskDateInput('5')).toBe('05'); // un día que empieza en 5 solo puede ser 05
+    expect(maskDateInput('32')).toBe('3'); // el día 32 no existe
+    expect(maskDateInput('00')).toBe('0');
+    expect(maskDateInput('142')).toBe('14/02'); // mes que empieza en 2 → 02
+    expect(maskDateInput('1413')).toBe('14/1'); // el mes 13 no existe
+    expect(maskDateInput('31122027')).toBe('31/12/2027');
+  });
+
+  it('avisa al instante si la fecha completa no existe', () => {
+    expect(liveDateError('31/02/2027')).toBe('Esa fecha no existe');
+    expect(liveDateError('31/02')).toBeUndefined(); // todavía incompleta
+    expect(liveDateError('2027-02-28')).toBeUndefined();
   });
 
   it('borrar una barra no la vuelve a poner de más', () => {
