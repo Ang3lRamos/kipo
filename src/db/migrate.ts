@@ -4,9 +4,16 @@ import { migration001 } from './migrations/001-initial';
 import { migration002 } from './migrations/002-document-pages';
 import { migration003 } from './migrations/003-reminders';
 import { migration004 } from './migrations/004-page-ocr';
+import { migration005 } from './migrations/005-secrets';
 
 // Orden de aplicación. La versión de cada migración es su posición + 1.
-const migrations: readonly string[] = [migration001, migration002, migration003, migration004];
+const migrations: readonly string[] = [
+  migration001,
+  migration002,
+  migration003,
+  migration004,
+  migration005,
+];
 
 export async function migrateDb(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');

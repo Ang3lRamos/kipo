@@ -24,6 +24,14 @@ describe('metadatos cifrados para la nube', () => {
     expect(() => decryptPayload(crypto, metaKey, 'doc-2', encoded)).toThrow(DecryptionError);
   });
 
+  it('una clave no se puede hacer pasar por un documento (y al revés)', () => {
+    const secret = encryptPayload(crypto, metaKey, 'id-1', { password: 'x' }, 'secret');
+    expect(decryptPayload(crypto, metaKey, 'id-1', secret, 'secret')).toEqual({ password: 'x' });
+    expect(() => decryptPayload(crypto, metaKey, 'id-1', secret, 'doc')).toThrow(DecryptionError);
+    const doc = encryptPayload(crypto, metaKey, 'id-1', payload);
+    expect(() => decryptPayload(crypto, metaKey, 'id-1', doc, 'secret')).toThrow(DecryptionError);
+  });
+
   it('la llave de metadatos es distinta de las de archivos y base', () => {
     expect(metaKey).not.toEqual(fileKey);
     expect(metaKey).not.toEqual(dbKey);

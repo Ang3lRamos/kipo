@@ -14,6 +14,7 @@ import {
   saveLastSync,
 } from './local-sync-repo';
 import { pushDocument } from './push-local';
+import { pullSecrets, pushSecrets } from './secrets-sync';
 
 // errors: motivo de cada fallo (para mostrarlo en la pantalla de respaldo).
 export type SyncSummary = {
@@ -81,7 +82,9 @@ export async function runSync(
   const summary: SyncSummary = { downloaded: 0, uploaded: 0, failed: 0, errors: [] };
   await syncVault(db, record);
   await pull(db, keys, summary);
+  await pullSecrets(db, keys, summary);
   await push(db, keys, summary);
+  await pushSecrets(db, keys, summary);
   if (summary.failed === 0) await saveLastSync(db);
   return summary;
 }

@@ -34,13 +34,17 @@ export async function pushVault(record: VaultRecord): Promise<void> {
 }
 
 // Gana el updated_at más reciente; lo decide la función de Postgres en un solo paso.
+export type RemoteTable = 'documents' | 'secrets';
+const upsertRpc = { documents: 'kipo_upsert_document', secrets: 'kipo_upsert_secret' } as const;
+
 export async function upsertRemoteDocument(
   id: string,
   payloadEnc: string,
   updatedAt: string,
   deletedAt: string | null,
+  table: RemoteTable = 'documents',
 ): Promise<boolean> {
-  const { data, error } = await supabase().rpc('kipo_upsert_document', {
+  const { data, error } = await supabase().rpc(upsertRpc[table], {
     p_id: id,
     p_payload: payloadEnc,
     p_updated_at: updatedAt,
@@ -58,9 +62,10 @@ export type SyncCursor = { at: string; id: string };
 export async function fetchChangesSince(
   cursor: SyncCursor | null,
   limit = 100,
+  table: RemoteTable = 'documents',
 ): Promise<RemoteDocument[]> {
   let query = supabase()
-    .from('documents')
+    .from(table)
     .select('id, payload_enc, updated_at, deleted_at, server_updated_at')
     .order('server_updated_at', { ascending: true })
     .order('id', { ascending: true })
