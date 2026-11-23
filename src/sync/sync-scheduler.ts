@@ -12,7 +12,9 @@ import { runSync, type SyncSummary } from './sync-engine';
 
 type Context = { db: SQLiteDatabase; keys: Subkeys; record: VaultRecord };
 export type SyncState =
-  { kind: 'idle'; last?: SyncSummary } | { kind: 'syncing' } | { kind: 'error'; message: string };
+  | { kind: 'idle'; last?: SyncSummary; at?: string }
+  | { kind: 'syncing' }
+  | { kind: 'error'; message: string; at: string };
 
 let context: Context | null = null;
 let running: Promise<SyncSummary | null> | null = null;
@@ -57,12 +59,12 @@ async function runOnce(): Promise<SyncSummary | null> {
   try {
     const summary = await runSync(current.db, current.keys, current.record);
     if (summary.downloaded > 0) await syncReminders(current.db); // fechas nuevas de otro teléfono
-    setState({ kind: 'idle', last: summary });
+    setState({ kind: 'idle', last: summary, at: new Date().toISOString() });
     return summary;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.warn('La sincronización falló', error);
-    setState({ kind: 'error', message });
+    setState({ kind: 'error', message, at: new Date().toISOString() });
     return null;
   }
 }

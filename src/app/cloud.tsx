@@ -1,15 +1,17 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { CloudUpload, LogOut, RefreshCw } from 'lucide-react-native';
-import { useCallback } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 
 import { CloudAccountSteps } from '@/features/cloud/cloud-account';
+import { SyncResult } from '@/features/cloud/sync-result';
 import { useCloud } from '@/features/cloud/use-cloud';
 import { signOut } from '@/sync/cloud-auth';
 import { countPending, loadLastSync } from '@/sync/local-sync-repo';
-import { syncNow } from '@/sync/sync-scheduler';
+import { getSyncState, syncNow } from '@/sync/sync-scheduler';
 import { Button } from '@/ui/button';
 import { Card } from '@/ui/card';
+import { KeyboardScroll } from '@/ui/keyboard-scroll';
 import { Screen, ScreenHeader } from '@/ui/screen';
 import { AppText } from '@/ui/text';
 import { useTheme } from '@/ui/theme-provider';
@@ -39,15 +41,25 @@ export default function CloudScreen() {
   });
 
   const syncing = sync.kind === 'syncing';
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Cada vez que termina una sincronización (manual o automática) se releen hora y pendientes.
+  useEffect(() => {
+    if (sync.kind !== 'syncing') reload();
+  }, [sync, reload]);
+
   const doSync = async () => {
-    await syncNow();
-    reload();
+    setNotice(null);
+    const result = await syncNow();
+    if (!result && getSyncState().kind !== 'error') {
+      setNotice('No hay una sesión lista: vuelve a entrar a tu cuenta.');
+    }
   };
 
   return (
     <Screen>
       <ScreenHeader title="Respaldo en la nube" />
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <Card tint={theme.colors.location.bg}>
           <AppText variant="h3" color={theme.colors.location.text}>
             Solo sube datos cifrados
@@ -65,11 +77,8 @@ export default function CloudScreen() {
             <AppText color="textMuted">
               {info.pending > 0 ? `${info.pending} documentos por subir` : 'Todo está al día'}
             </AppText>
-            {sync.kind === 'error' ? (
-              <AppText
-                color={theme.colors.danger.text}
-              >{`No se pudo sincronizar: ${sync.message}`}</AppText>
-            ) : null}
+            <SyncResult sync={sync} />
+            {notice ? <AppText color={theme.colors.danger.text}>{notice}</AppText> : null}
             <Button
               label={syncing ? 'Sincronizando…' : 'Sincronizar ahora'}
               icon={syncing ? CloudUpload : RefreshCw}
@@ -90,7 +99,7 @@ export default function CloudScreen() {
             <CloudAccountSteps status={status} error={error} run={run} />
           </Card>
         )}
-      </ScrollView>
+      </KeyboardScroll>
     </Screen>
   );
 }

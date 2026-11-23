@@ -15,7 +15,15 @@ import {
 } from './local-sync-repo';
 import { pushDocument } from './push-local';
 
-export type SyncSummary = { downloaded: number; uploaded: number; failed: number };
+// errors: motivo de cada fallo (para mostrarlo en la pantalla de respaldo).
+export type SyncSummary = {
+  downloaded: number;
+  uploaded: number;
+  failed: number;
+  errors: string[];
+};
+
+const reason = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 // La bóveda se sube si la nube no la tiene o si cambió la contraseña en este teléfono.
 // Nunca se reemplaza la local con la de la nube (eso solo pasa al restaurar en un teléfono
@@ -40,6 +48,7 @@ async function pull(db: SQLiteDatabase, keys: Subkeys, summary: SyncSummary): Pr
         // Un documento dañado o sin red no detiene el resto; el cursor no avanza más allá
         // de él, así que se reintenta en la próxima sincronización.
         summary.failed++;
+        summary.errors.push(`Bajar: ${reason(error)}`);
         console.warn('No se pudo aplicar un documento de la nube', error);
         return;
       }
@@ -57,6 +66,7 @@ async function push(db: SQLiteDatabase, keys: Subkeys, summary: SyncSummary): Pr
     } catch (error) {
       // Queda pendiente (updated_at > synced_at) y se reintenta después: cola offline.
       summary.failed++;
+      summary.errors.push(`Subir "${doc.title}": ${reason(error)}`);
       console.warn('No se pudo subir un documento', error);
     }
   }
@@ -68,7 +78,7 @@ export async function runSync(
   keys: Subkeys,
   record: VaultRecord,
 ): Promise<SyncSummary> {
-  const summary: SyncSummary = { downloaded: 0, uploaded: 0, failed: 0 };
+  const summary: SyncSummary = { downloaded: 0, uploaded: 0, failed: 0, errors: [] };
   await syncVault(db, record);
   await pull(db, keys, summary);
   await push(db, keys, summary);
