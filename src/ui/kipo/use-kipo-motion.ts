@@ -40,15 +40,10 @@ export function useKipoMotion(mood: KipoMood, animated: boolean) {
       -1,
       true,
     );
-    // Argolla: −10° a 10° en 2,6 s.
-    ring.value = withRepeat(
-      withSequence(
-        withTiming(10, { duration: 650, easing: smooth }),
-        withTiming(-10, { duration: 1300, easing: smooth }),
-        withTiming(0, { duration: 650, easing: smooth }),
-      ),
-      -1,
-    );
+    // Argolla: péndulo de −10° a 10° (ida y vuelta en 2,6 s). Con reversa no hay salto
+    // ni pausa en el centro, donde un péndulo va más rápido.
+    ring.value = -10;
+    ring.value = withRepeat(withTiming(10, { duration: 1300, easing: smooth }), -1, true);
     if (!sleeping) {
       // Parpadeo: cada 4 s, los ojos se cierran unos 0,2 s.
       blink.value = withRepeat(
@@ -60,14 +55,10 @@ export function useKipoMotion(mood: KipoMood, animated: boolean) {
       );
     }
     if (mood === 'buscando') {
-      // Buscando: de −4 a 5 de lado a lado en 3,2 s.
-      look.value = withRepeat(
-        withSequence(
-          withTiming(-4, { duration: 1600, easing: smooth }),
-          withTiming(5, { duration: 1600, easing: smooth }),
-        ),
-        -1,
-      );
+      // Buscando: de −4 a 5 de lado a lado en 3,2 s. Se parte en −4 y se usa reversa:
+      // withRepeat sin reversa vuelve al valor inicial en cada vuelta y se notaba un salto.
+      look.value = -4;
+      look.value = withRepeat(withTiming(5, { duration: 1600, easing: smooth }), -1, true);
     }
     if (sleeping) {
       zzz.value = withRepeat(withTiming(1, { duration: 3000, easing: Easing.linear }), -1, false);
