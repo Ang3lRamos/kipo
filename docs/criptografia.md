@@ -63,6 +63,15 @@ SecureStore (Keystore de Android)
 - Generador con el CSPRNG del teléfono y muestreo por rechazo (sin sesgo por módulo).
 - Al copiar: el contenido se marca como sensible (Android 13+ no lo muestra en la vista previa) y se borra del portapapeles a los 30 s o al bloquear Kipo, solo si sigue siendo lo que Kipo copió.
 
+## Respaldo en archivo `.kipo` (fase 8)
+
+- Un solo archivo: `KIPOBAK` + versión, el largo del encabezado y un encabezado JSON con el **registro de la bóveda** (la DEK envuelta con la contraseña y con la clave de recuperación) y el **índice cifrado** con metaKey (AAD `kipo/backup/manifest/v1`). Después van los `.bin` del teléfono tal cual, ya cifrados con fileKey.
+- Documentos y claves van cifrados igual que en la nube (`payload-crypto.ts`, con su AAD por fila), así que se importan con el mismo código de la sincronización.
+- Sin la contraseña maestra o la clave de recuperación, el archivo no revela nada: ni nombres, ni rutas, ni cuántas páginas tiene cada documento (solo el tamaño total).
+- Importar en el mismo teléfono solo acepta respaldos de **la misma bóveda** (se compara la envoltura de recuperación, que no cambia al cambiar la contraseña). Gana la versión más reciente de cada fila.
+- Teléfono nuevo: se valida la contraseña con el registro del archivo antes de guardar nada; luego se importa al abrir la base.
+- El índice valida los ids (`[A-Za-z0-9-]`) aunque esté bien cifrado: un archivo manipulado no puede escribir fuera de `docs/`.
+
 ## Qué protege y qué no
 
 **Protege:** si alguien copia la carpeta de la app, la base o los archivos (respaldo, teléfono robado sin desbloquear la app, la nube en la fase 5), no puede leer nada sin la contraseña o la clave de recuperación. Para adivinar la contraseña tendría que pagar ~0,75 s y 64 MiB por intento.

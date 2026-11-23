@@ -15,11 +15,15 @@ import { parsePayload, type DocumentPayload } from './payload';
 
 const toIso = (timestamp: string) => new Date(timestamp).toISOString();
 
-async function downloadMissingPages(
+// Consigue los archivos de las páginas que faltan en el teléfono. Por defecto, de R2; el
+// respaldo .kipo los saca del propio archivo.
+export type ObtainPages = (
   documentId: string,
   payload: DocumentPayload,
   have: Set<string>,
-) {
+) => Promise<void>;
+
+const downloadMissingPages: ObtainPages = async (documentId, payload, have) => {
   for (const page of payload.pages) {
     if (have.has(page.id)) continue;
     // Los archivos llegan cifrados tal como se subieron: se guardan sin descifrar.
@@ -32,7 +36,7 @@ async function downloadMissingPages(
       );
     }
   }
-}
+};
 
 async function writeDocument(db: SQLiteDatabase, id: string, p: DocumentPayload, at: string) {
   await db.runAsync(
@@ -99,6 +103,7 @@ export async function applyRemoteDocument(
   db: SQLiteDatabase,
   keys: Subkeys,
   row: RemoteDocument,
+  obtainPages: ObtainPages = downloadMissingPages,
 ): Promise<'applied' | 'skipped'> {
   const remoteAt = toIso(row.updated_at);
   const localAt = await localUpdatedAt(db, row.id);
@@ -120,7 +125,7 @@ export async function applyRemoteDocument(
   );
   const have = await localPageIds(db, row.id);
   // Primero los archivos (fuera de la transacción): si falla la red, no queda nada a medias.
-  await downloadMissingPages(row.id, payload, have);
+  await obtainPages(row.id, payload, have);
   await db.withTransactionAsync(async () => {
     await writeDocument(db, row.id, payload, remoteAt);
     await writePages(db, row.id, payload, have);

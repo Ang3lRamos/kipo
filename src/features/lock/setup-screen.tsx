@@ -14,12 +14,21 @@ import { TextField } from '@/ui/text-field';
 import { LockLayout } from './lock-layout';
 import { NewPasswordForm } from './new-password-form';
 import { RecoveryKeyView } from './recovery-key-view';
+import { RestoreFileScreen } from './restore-file-screen';
 import { RestoreScreen } from './restore-screen';
 import { openSession, persistVault, prepareVault } from './vault-actions';
 import { useVault } from './vault-context';
 
 type Draft = { record: VaultRecord; dek: Uint8Array; recoveryText: string };
-type Step = 'intro' | 'restore' | 'password' | 'recovery' | 'confirm' | 'biometrics' | 'theme';
+type Step =
+  | 'intro'
+  | 'restore'
+  | 'restore-file'
+  | 'password'
+  | 'recovery'
+  | 'confirm'
+  | 'biometrics'
+  | 'theme';
 
 export function SetupScreen() {
   const { unlock } = useVault();
@@ -74,11 +83,17 @@ export function SetupScreen() {
           label="Ya uso Kipo: restaurar desde la nube"
           onPress={() => setStep('restore')}
         />
+        <Button
+          variant="ghost"
+          label="Restaurar desde un archivo .kipo"
+          onPress={() => setStep('restore-file')}
+        />
       </LockLayout>
     );
   }
 
   if (step === 'restore') return <RestoreScreen onCancel={() => setStep('intro')} />;
+  if (step === 'restore-file') return <RestoreFileScreen onCancel={() => setStep('intro')} />;
 
   if (step === 'password' || !draft) {
     return (

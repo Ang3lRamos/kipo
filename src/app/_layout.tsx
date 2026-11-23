@@ -7,6 +7,7 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { vaultDbName } from '@/db/open-encrypted';
+import { PendingImportGate } from '@/features/backup/pending-import-gate';
 import { initVaultDatabase, vaultDbOptions } from '@/features/lock/init-vault-db';
 import { LockPreferencesProvider } from '@/features/lock/lock-preferences';
 import type { Session } from '@/features/lock/vault-actions';
@@ -53,19 +54,21 @@ function UnlockedApp({ session }: { session: Session }) {
       onError={onError}
     >
       <FeedbackProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: theme.colors.background },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="documents/[id]/pages/[pageId]"
-            options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
-          />
-        </Stack>
-        <NotificationRouter />
+        <PendingImportGate>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: theme.colors.background },
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="documents/[id]/pages/[pageId]"
+              options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
+            />
+          </Stack>
+          <NotificationRouter />
+        </PendingImportGate>
       </FeedbackProvider>
     </SQLiteProvider>
   );

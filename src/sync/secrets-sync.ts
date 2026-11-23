@@ -7,7 +7,12 @@ import { getSetting, setSetting } from '@/db/settings-repo';
 import { parseSecretData } from '@/secrets/secret-codec';
 import { searchTextFor } from '@/secrets/secret-rules';
 
-import { fetchChangesSince, upsertRemoteDocument, type SyncCursor } from './cloud-api';
+import {
+  fetchChangesSince,
+  upsertRemoteDocument,
+  type RemoteDocument,
+  type SyncCursor,
+} from './cloud-api';
 
 // Sincronización de claves (fase 7): misma lógica que los documentos, en la tabla `secrets`.
 // Lo que sube: { v, title, data, createdAt } cifrado con la llave de metadatos ("secret").
@@ -56,11 +61,11 @@ export async function pushSecrets(db: SQLiteDatabase, keys: Subkeys, summary: Su
   }
 }
 
-async function applyRemote(
+export async function applyRemoteSecret(
   db: SQLiteDatabase,
   keys: Subkeys,
-  row: Awaited<ReturnType<typeof fetchChangesSince>>[number],
-) {
+  row: Pick<RemoteDocument, 'id' | 'payload_enc' | 'updated_at' | 'deleted_at'>,
+): Promise<boolean> {
   const remoteAt = new Date(row.updated_at).toISOString();
   const local = await db.getFirstAsync<{ updated_at: string }>(
     'SELECT updated_at FROM secrets WHERE id = ?',
@@ -112,7 +117,7 @@ export async function pullSecrets(db: SQLiteDatabase, keys: Subkeys, summary: Su
     if (rows.length === 0) return;
     for (const row of rows) {
       try {
-        if (await applyRemote(db, keys, row)) summary.downloaded++;
+        if (await applyRemoteSecret(db, keys, row)) summary.downloaded++;
       } catch (error) {
         summary.failed++;
         summary.errors.push(`Bajar una clave: ${reason(error)}`);

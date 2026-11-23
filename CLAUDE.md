@@ -35,7 +35,8 @@ src/                 # alias @/* apunta aquí
   sync/              # cliente Supabase, subida/bajada R2, cola de sincronización
   ocr/               # OCR, PDF a imagen y sugerencias (título, categoría, fechas)
   secrets/           # claves: TOTP, generador de contraseñas, reglas y portapapeles
-  notifications/     # programación de alertas de vencimiento
+  notifications/     # programación de alertas de vencimiento y renovaciones
+  backup/            # respaldo en archivo .kipo (formato, exportar, importar)
   features/<x>/      # componentes y hooks por funcionalidad (lock/ = bóveda, bloqueo y desbloqueo)
   ui/                # componentes reutilizables
 docs/                # decisiones de diseño (criptografia.md, nube.md)

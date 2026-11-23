@@ -199,7 +199,7 @@ Decide antes: ¿Bitwarden para las contraseñas, o construirlo tú?
 
 ## Fase 8 — Pulido y entrega (1 semana)
 
-- [ ] Exportar un respaldo cifrado (`.kipo`) y probar a restaurarlo
+- [ ] Exportar un respaldo cifrado (`.kipo`) y probar a restaurarlo (hecho en código; falta probarlo en el teléfono)
 - [ ] Compartir temporal: descifrar → enlace R2 de 24 horas con un archivo re-cifrado y una clave aparte (o solo exportar al compartir del sistema)
 - [ ] Pantalla de ajustes: tiempo de bloqueo, biometría, alertas, almacenamiento usado
 - [ ] Temas elegibles: paletas Menta, Lavanda, Durazno y Cielo, más modo oscuro (claro, oscuro o según el sistema). `src/ui/themes.ts` con los tokens de cada paleta, un `ThemeProvider` y la elección guardada en SecureStore (no en SQLite: la base está cifrada). El color de la mascota sigue al tema.
