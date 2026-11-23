@@ -1,6 +1,6 @@
-import { Lock, MapPin } from 'lucide-react-native';
+import { Bell, Lock, MapPin } from 'lucide-react-native';
 import { useState, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import type { DocumentInput } from '@/types/document';
 import { Button } from '@/ui/button';
@@ -77,6 +77,21 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
           />
         </View>
       </View>
+      {values.expiresAt.trim() ? (
+        <Card>
+          <View style={styles.alerts}>
+            <Bell color={theme.colors.accentText} size={20} strokeWidth={2} />
+            <AppText variant="bodyMedium" style={styles.alertsText}>
+              Avisarme antes de que venza
+            </AppText>
+            <Switch
+              accessibilityLabel="Avisarme antes de que venza"
+              value={values.alertsEnabled}
+              onValueChange={set('alertsEnabled')}
+            />
+          </View>
+        </Card>
+      ) : null}
       <TextField
         label="Etiquetas"
         placeholder="Ej. personal, original"
@@ -113,6 +128,8 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
 
 const styles = StyleSheet.create({
   container: { gap: 16, padding: 16, paddingBottom: 48 },
+  alerts: { alignItems: 'center', flexDirection: 'row', gap: 10 },
+  alertsText: { flex: 1 },
   dateField: { flex: 1 },
   dates: { flexDirection: 'row', gap: 12 },
   field: { gap: 6 },

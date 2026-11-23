@@ -5,6 +5,7 @@ import { updateDocument } from '@/db/documents-repo';
 import { DocumentForm } from '@/features/documents/document-form';
 import { formValuesFrom } from '@/features/documents/form-values';
 import { useDocumentDetail } from '@/features/documents/use-documents';
+import { syncReminders } from '@/notifications/sync-reminders';
 import { EmptyState } from '@/ui/empty-state';
 import { Screen, ScreenHeader } from '@/ui/screen';
 
@@ -24,6 +25,7 @@ export default function EditDocumentScreen() {
           submitLabel="Guardar cambios"
           onSubmit={async (input) => {
             await updateDocument(db, id, input);
+            void syncReminders(db); // reprograma con la fecha nueva
             router.back();
           }}
         />

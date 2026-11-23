@@ -11,6 +11,8 @@ import { initVaultDatabase, vaultDbOptions } from '@/features/lock/init-vault-db
 import type { Session } from '@/features/lock/vault-actions';
 import { VaultProvider, useVault } from '@/features/lock/vault-context';
 import { VaultGate } from '@/features/lock/vault-gate';
+import { NotificationRouter } from '@/features/navigation/notification-router';
+import { configureNotifications } from '@/notifications/notifier';
 import { useAppFonts } from '@/ui/fonts';
 import { ThemeProvider, useTheme } from '@/ui/theme-provider';
 
@@ -52,6 +54,7 @@ function UnlockedApp({ session }: { session: Session }) {
           options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
         />
       </Stack>
+      <NotificationRouter />
     </SQLiteProvider>
   );
 }
@@ -61,6 +64,10 @@ function AppShell() {
   const { state } = useVault();
   const fontsReady = useAppFonts();
   const ready = fontsReady && state.status !== 'loading';
+
+  useEffect(() => {
+    configureNotifications().catch((e: unknown) => console.warn('Sin canal de avisos', e));
+  }, []);
 
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();

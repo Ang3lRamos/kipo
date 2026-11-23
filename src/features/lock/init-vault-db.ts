@@ -4,6 +4,7 @@ import type { Subkeys } from '@/crypto/subkeys';
 import { migrateLegacyDatabase } from '@/db/migrate-legacy';
 import { unlockDatabase } from '@/db/open-encrypted';
 import { encryptLegacyFiles } from '@/files/migrate-legacy-files';
+import { syncReminders } from '@/notifications/sync-reminders';
 
 // Opciones de apertura de la base cifrada. useNewConnection evita que expo-sqlite reutilice
 // una conexión en caché que ya recibió la llave: repetir PRAGMA key sobre una conexión usada
@@ -37,4 +38,8 @@ export async function initVaultDatabase(db: SQLiteDatabase, keys: Subkeys): Prom
   } catch (error) {
     console.error('La migración de datos viejos falló; se reintentará', error);
   }
+
+  // Recalcula los avisos de vencimiento (por si cambió la fecha o se instaló de nuevo).
+  // Sin await: no retrasa la apertura de la app.
+  void syncReminders(db);
 }

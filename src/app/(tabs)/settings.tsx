@@ -1,11 +1,15 @@
 import { router } from 'expo-router';
-import { Fingerprint, KeyRound, Lock, Palette, ShieldCheck } from 'lucide-react-native';
-import { useState } from 'react';
+import { useSQLiteContext } from 'expo-sqlite';
+import { Bell, Fingerprint, KeyRound, Lock, Palette, ShieldCheck } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Switch } from 'react-native';
 
 import { canUseBiometrics } from '@/crypto/vault-store';
 import { useVault } from '@/features/lock/vault-context';
 import { SettingsRow } from '@/features/settings/settings-row';
+import { describeOffsets } from '@/notifications/reminder-plan';
+import { loadReminderOffsets } from '@/notifications/sync-reminders';
+import { useFocusedQuery } from '@/ui/use-focused-query';
 import { Card } from '@/ui/card';
 import { Screen } from '@/ui/screen';
 import { AppText } from '@/ui/text';
@@ -21,6 +25,9 @@ export default function SettingsScreen() {
   const biometricEnabled = state.status === 'unlocked' && state.biometricEnabled;
   const [error, setError] = useState<string | null>(null);
   const paletteLabel = palettes.find((p) => p.name === preference.palette)?.label ?? '';
+  const db = useSQLiteContext();
+  const loadOffsets = useCallback(() => loadReminderOffsets(db), [db]);
+  const { data: offsets } = useFocusedQuery(loadOffsets, [] as number[]);
 
   const toggleBiometric = (enabled: boolean) => {
     setError(null);
@@ -42,6 +49,16 @@ export default function SettingsScreen() {
             label="Color y modo"
             detail={`${paletteLabel}, ${modeLabels[preference.mode]}`}
             onPress={() => router.push('/theme')}
+          />
+        </Card>
+
+        <Card>
+          <AppText variant="h3">Avisos</AppText>
+          <SettingsRow
+            icon={Bell}
+            label="Avisos de vencimiento"
+            detail={describeOffsets(offsets)}
+            onPress={() => router.push('/reminders')}
           />
         </Card>
 

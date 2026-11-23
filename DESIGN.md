@@ -58,7 +58,6 @@ Fuente visual: mockup "Kipo — mockup de la app" en claude.ai. Los colores, rad
 ## Pendiente por fase
 
 - Banner de sugerencia del OCR en "Nuevo documento" → fase 6.
-- Casilla de alertas → fase 4.
 - Botón "Compartir 24 h" en el detalle → fase 8.
 - Pestaña "Claves" → fase 7 (por ahora muestra "Muy pronto").
 
