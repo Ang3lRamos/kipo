@@ -1,0 +1,8 @@
+# Configuración mínima para `npx supabase functions deploy`.
+# El project_id se completa con `npx supabase link --project-ref <ref>`.
+
+[functions.upload-url]
+verify_jwt = true
+
+[functions.download-url]
+verify_jwt = true
