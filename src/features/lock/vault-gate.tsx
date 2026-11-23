@@ -5,6 +5,7 @@ import type { Session } from './vault-actions';
 import { PrivacyCover } from './privacy-cover';
 import { SetupScreen } from './setup-screen';
 import { UnlockScreen } from './unlock-screen';
+import { useLockPreferences } from './lock-preferences';
 import { useAutoLock } from './use-auto-lock';
 import { useVault } from './vault-context';
 
@@ -12,7 +13,8 @@ import { useVault } from './vault-context';
 // La app (y con ella la base cifrada) solo se monta con la bóveda abierta.
 export function VaultGate({ children }: { children: (session: Session) => ReactNode }) {
   const { state, lock } = useVault();
-  const bump = useAutoLock(state.status === 'unlocked', lock);
+  const { preferences } = useLockPreferences();
+  const bump = useAutoLock(state.status === 'unlocked', lock, preferences);
 
   let content: ReactNode = null;
   if (state.status === 'setup') content = <SetupScreen />;

@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { vaultDbName } from '@/db/open-encrypted';
 import { initVaultDatabase, vaultDbOptions } from '@/features/lock/init-vault-db';
+import { LockPreferencesProvider } from '@/features/lock/lock-preferences';
 import type { Session } from '@/features/lock/vault-actions';
 import { VaultProvider, useVault } from '@/features/lock/vault-context';
 import { VaultGate } from '@/features/lock/vault-gate';
@@ -94,9 +95,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <ThemeProvider>
-        <VaultProvider>
-          <AppShell />
-        </VaultProvider>
+        <LockPreferencesProvider>
+          <VaultProvider>
+            <AppShell />
+          </VaultProvider>
+        </LockPreferencesProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
