@@ -59,6 +59,12 @@ Fuente visual: mockup "Kipo — mockup de la app" en claude.ai. Los colores, rad
 
 - Botón "Compartir 24 h" en el detalle → fase 8.
 
+## Logos de servicios (claves)
+
+- Vienen de [Simple Icons](https://simpleicons.org) (licencia CC0) y están **incluidos en la app** (`src/secrets/brand-icons.ts`): nunca se descargan, porque pedir el logo de un sitio revelaría qué cuentas tiene el usuario.
+- Solo se incluyen unos 60 servicios comunes. Para agregar más: edita la lista de `scripts/generate-brand-icons.mjs` y vuelve a generarlo (las instrucciones están en el script).
+- Si no hay logo, se muestra la inicial sobre el color del tipo de clave.
+
 ## Reglas de accesibilidad
 
 - El contraste de texto debe ser al menos 4.5:1. Las paletas ya cumplen; si agregas colores, verifícalos.

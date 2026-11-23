@@ -4,6 +4,7 @@ import { Ellipsis, Pencil } from 'lucide-react-native';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { softDeleteSecret } from '@/db/secrets-repo';
+import { BrandAvatar } from '@/features/secrets/brand-avatar';
 import { kindInfo } from '@/features/secrets/kinds';
 import { SecretDetails } from '@/features/secrets/secret-details';
 import { useSecret } from '@/features/secrets/use-secrets';
@@ -79,7 +80,12 @@ export default function SecretDetailScreen() {
             {info.label}
           </AppText>
         </View>
-        <AppText variant="h1">{secret.title}</AppText>
+        <View style={styles.title}>
+          <BrandAvatar title={secret.title} data={secret.data} size={56} />
+          <AppText variant="h1" style={styles.flex}>
+            {secret.title}
+          </AppText>
+        </View>
         <Card>
           <SecretDetails data={secret.data} />
         </Card>
@@ -99,4 +105,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   container: { gap: 16, padding: 16, paddingBottom: 48 },
+  flex: { flex: 1 },
+  title: { alignItems: 'center', flexDirection: 'row', gap: 12 },
 });

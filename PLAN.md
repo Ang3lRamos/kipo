@@ -177,10 +177,10 @@ create table documents (
 
 ## Fase 6 — OCR y búsqueda por contenido (1 semana)
 
-- [ ] OCR en el dispositivo con ML Kit al guardar cada página
-- [ ] Guardar el texto en `ocr_text`, indexado en FTS5 y viajando cifrado dentro de `payload_enc`
-- [ ] Sugerir automáticamente título, categoría y fecha de vencimiento a partir del texto (con reglas simples al inicio)
-- [ ] Resaltar las coincidencias en los resultados
+- [x] OCR en el dispositivo con ML Kit al guardar cada página
+- [x] Guardar el texto en `ocr_text`, indexado en FTS5 y viajando cifrado dentro de `payload_enc`
+- [x] Sugerir automáticamente título, categoría y fecha de vencimiento a partir del texto (con reglas simples al inicio)
+- [x] Resaltar las coincidencias en los resultados
 
 **Terminado cuando**: buscas "Sura" y aparece un PDF que se llama `scan_0034`.
 
@@ -190,10 +190,10 @@ create table documents (
 
 Decide antes: ¿Bitwarden para las contraseñas, o construirlo tú?
 
-- [ ] Tipos de ítem: login (usuario, contraseña, URL, TOTP), nota segura, tarjeta (solo los últimos 4 dígitos y el banco) y suscripción
-- [ ] Generador de contraseñas
-- [ ] Copiar al portapapeles con borrado automático a los 30 segundos
-- [ ] Códigos TOTP (2FA)
+- [x] Tipos de ítem: login (usuario, contraseña, URL, TOTP), nota segura, tarjeta (solo los últimos 4 dígitos y el banco) y suscripción
+- [x] Generador de contraseñas
+- [x] Copiar al portapapeles con borrado automático a los 30 segundos
+- [x] Códigos TOTP (2FA)
 
 ---
 
