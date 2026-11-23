@@ -70,7 +70,9 @@ export async function decryptPdfToTemp(
     dir.create({ intermediates: true, idempotent: true });
     const file = new File(dir, `${pageId}.pdf`);
     file.write(bytes);
-    return file;
+    // Referencia nueva: la anterior se creó cuando el archivo no existía y el visor la
+    // rechazaba la primera vez ("File does not exist").
+    return new File(file.uri);
   } finally {
     wipe(bytes);
   }

@@ -34,7 +34,13 @@ export default function PageViewerScreen() {
         // El PDF descifrado va a la caché temporal, que se borra al bloquear Kipo.
         const file = await decryptPdfToTemp(keys.fileKey, page.filePath, page.id);
         suspendAutoLock(); // el visor es otra app; se reanuda al volver a Kipo
-        await file.preview();
+        try {
+          await file.preview();
+        } catch {
+          // Si el sistema aún no ve el archivo recién escrito, se reintenta una vez.
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          await file.preview();
+        }
       } catch (error) {
         console.error('No se pudo abrir el PDF', error);
       } finally {

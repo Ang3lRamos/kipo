@@ -157,17 +157,17 @@ create table documents (
 
 **Edge Functions**
 
-- [ ] `upload-url`: valida el JWT, arma la ruta `{user_id}/{doc_id}/{file|thumb|page-n}` y devuelve una URL PUT prefirmada que expira en 5 minutos
-- [ ] `download-url`: lo mismo para GET
-- [ ] Credenciales de R2 en `supabase secrets`, nunca en la app
+- [x] `upload-url`: valida el JWT, arma la ruta `{user_id}/{doc_id}/{file|thumb|page-n}` y devuelve una URL PUT prefirmada que expira en 5 minutos
+- [x] `download-url`: lo mismo para GET
+- [x] Credenciales de R2 en `supabase secrets`, nunca en la app
 
 **App**
 
-- [ ] Login con Supabase Auth (correo + contraseña, distinta de la maestra) y 2FA
-- [ ] Cola de sincronización en `src/sync`: subir pendientes y bajar cambios desde `synced_at`
-- [ ] Conflictos: gana el `updated_at` más reciente
-- [ ] Restaurar en un celular nuevo: login → bajar `vault_keys` → contraseña maestra → bajar documentos
-- [ ] Alerta de facturación en Cloudflare y revisión del uso en Supabase
+- [x] Login con Supabase Auth (correo + contraseña, distinta de la maestra) y 2FA
+- [x] Cola de sincronización en `src/sync`: subir pendientes y bajar cambios desde `synced_at`
+- [x] Conflictos: gana el `updated_at` más reciente
+- [x] Restaurar en un celular nuevo: login → bajar `vault_keys` → contraseña maestra → bajar documentos
+- [x] Alerta de facturación en Cloudflare y revisión del uso en Supabase
 
 **Terminado cuando**: borras la app, la reinstalas y recuperas todo con tu login y tu contraseña maestra. En R2 y Supabase solo se ven datos ilegibles.
 
