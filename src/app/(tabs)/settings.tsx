@@ -14,6 +14,7 @@ import { ScrollView, StyleSheet, Switch } from 'react-native';
 
 import { canUseBiometrics } from '@/crypto/vault-store';
 import { useVault } from '@/features/lock/vault-context';
+import { ReadExistingRow } from '@/features/ocr/read-existing-row';
 import { SettingsRow } from '@/features/settings/settings-row';
 import { describeOffsets } from '@/notifications/reminder-plan';
 import { loadReminderOffsets } from '@/notifications/sync-reminders';
@@ -68,6 +69,11 @@ export default function SettingsScreen() {
             detail="Cifrado de extremo a extremo"
             onPress={() => router.push('/cloud')}
           />
+        </Card>
+
+        <Card>
+          <AppText variant="h3">Búsqueda</AppText>
+          <ReadExistingRow />
         </Card>
 
         <Card>

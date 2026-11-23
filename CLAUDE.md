@@ -21,7 +21,7 @@ App móvil personal (Expo / React Native + TypeScript) para guardar documentos, 
 - UI: `react-native-svg` (mascota Kipo), `lucide-react-native` (íconos, nunca emojis), `expo-haptics`, fuentes Space Grotesk e Inter (`@expo-google-fonts`)
 - Cripto: `react-native-quick-crypto` (Argon2id, AES-256-GCM y CSPRNG nativos con API de Node), `@noble/hashes` (HKDF, SHA-256), `@scure/base`. Decisiones explicadas en `docs/criptografia.md`
 - Nube: Supabase (Auth, Postgres con RLS, Edge Functions en Deno) + Cloudflare R2 (URLs prefirmadas S3)
-- OCR: por definir en la fase 6 (`@react-native-ml-kit/text-recognition` no está probado en la New Architecture)
+- OCR en el dispositivo: `expo-text-extractor` (ML Kit / Vision) y `react-native-pdf-thumbnail` (páginas de PDF a imagen). El texto vive en SQLCipher y viaja cifrado dentro de `payload_enc`
 
 ## Estructura
 
@@ -33,6 +33,7 @@ src/                 # alias @/* apunta aquí
     testing/         # primitivas sobre node:crypto, solo para Jest
   files/             # captura, compresión, miniaturas, almacenamiento cifrado
   sync/              # cliente Supabase, subida/bajada R2, cola de sincronización
+  ocr/               # OCR, PDF a imagen y sugerencias (título, categoría, fechas)
   notifications/     # programación de alertas de vencimiento
   features/<x>/      # componentes y hooks por funcionalidad (lock/ = bóveda, bloqueo y desbloqueo)
   ui/                # componentes reutilizables

@@ -1,18 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { createDocument } from '@/db/documents-repo';
 import { DocumentForm } from '@/features/documents/document-form';
-import { emptyFormValues } from '@/features/documents/form-values';
+import { emptyFormValues, type FormValues } from '@/features/documents/form-values';
 import { withAutoLockSuspended } from '@/features/lock/auto-lock-guard';
+import { SuggestionBanner } from '@/features/ocr/suggestion-banner';
 import { useSession } from '@/features/lock/vault-context';
 import { AddPageButtons } from '@/features/pages/add-page-buttons';
 import { importPages } from '@/features/pages/import-pages';
 import { PendingPages } from '@/features/pages/pending-pages';
 import { usePendingPages } from '@/features/pages/use-pending-pages';
 import { scanWithCamera } from '@/files/capture';
+import { suggestFromText, type Suggestion } from '@/ocr/suggest';
 import { afterLocalChange } from '@/sync/after-local-change';
 import { EmptyState } from '@/ui/empty-state';
 import { Screen, ScreenHeader } from '@/ui/screen';
@@ -28,6 +30,19 @@ export default function NewDocumentScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const scanned = useRef(false);
+  const [dismissed, setDismissed] = useState(''); // texto cuya sugerencia ya se usó o ignoró
+  const suggestion = useMemo(() => suggestFromText(pending.text), [pending.text]);
+  const showBanner = pending.reading || (pending.text !== '' && pending.text !== dismissed);
+
+  const applySuggestion = (apply: (patch: Partial<FormValues>) => void, s: Suggestion) => {
+    const patch: Partial<FormValues> = {};
+    if (s.title) patch.title = s.title;
+    if (s.category) patch.category = s.category;
+    if (s.expiresAt) patch.expiresAt = s.expiresAt;
+    if (s.issuedAt) patch.issuedAt = s.issuedAt;
+    apply(patch);
+    setDismissed(pending.text);
+  };
 
   // Desde el botón "Escanear" del inicio, el escáner se abre directamente.
   useEffect(() => {
@@ -57,13 +72,21 @@ export default function NewDocumentScreen() {
       <DocumentForm
         initialValues={emptyFormValues}
         submitLabel="Guardar cifrado"
-        header={
+        header={(apply) => (
           <View style={styles.pages}>
             <PendingPages items={pending.items} onRemove={pending.remove} />
+            {showBanner ? (
+              <SuggestionBanner
+                reading={pending.reading}
+                suggestion={suggestion}
+                onUse={() => applySuggestion(apply, suggestion)}
+                onDismiss={() => setDismissed(pending.text)}
+              />
+            ) : null}
             <AddPageButtons busy={false} onCaptured={pending.add} onError={setError} />
             {error ? <AppText color={theme.colors.danger.text}>{error}</AppText> : null}
           </View>
-        }
+        )}
         onSubmit={async (input) => {
           const id = await createDocument(db, input);
           const { failed } = await importPages(db, keys.fileKey, id, pending.commit());

@@ -48,6 +48,12 @@ SecureStore (Keystore de Android)
 - La sesión de Supabase vive en SecureStore. Las credenciales de R2 viven solo en los secrets de las Edge Functions.
 - Detalles y configuración en `docs/nube.md`.
 
+## OCR (fase 6)
+
+- El texto se reconoce en el teléfono (ML Kit en Android, Vision en iOS) sobre la imagen ya comprimida y sin metadatos, **antes** de cifrarla. Ninguna imagen ni texto sale a un servicio de OCR.
+- Para leer PDFs y documentos guardados antes, la página se descifra a `cache/decrypted/`, se lee y el temporal se borra de inmediato (y la carpeta se vacía al bloquear).
+- El texto se guarda por página en SQLCipher y viaja a la nube dentro de `payload_enc`, cifrado con la llave de metadatos.
+
 ## Qué protege y qué no
 
 **Protege:** si alguien copia la carpeta de la app, la base o los archivos (respaldo, teléfono robado sin desbloquear la app, la nube en la fase 5), no puede leer nada sin la contraseña o la clave de recuperación. Para adivinar la contraseña tendría que pagar ~0,75 s y 64 MiB por intento.

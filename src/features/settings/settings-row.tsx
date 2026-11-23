@@ -8,9 +8,9 @@ import { useTheme } from '@/ui/theme-provider';
 type Props = {
   icon: LucideIcon;
   label: string;
-  detail?: string;
-  onPress?: () => void;
-  right?: ReactNode; // por ejemplo, un interruptor
+  detail?: string | undefined;
+  onPress?: (() => void) | undefined;
+  right?: ReactNode | undefined; // por ejemplo, un interruptor
 };
 
 export function SettingsRow({ icon: Icon, label, detail, onPress, right }: Props) {

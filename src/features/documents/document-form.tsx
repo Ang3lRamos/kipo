@@ -17,7 +17,9 @@ type Props = {
   initialValues: FormValues;
   submitLabel: string;
   onSubmit: (input: DocumentInput) => Promise<void>;
-  header?: ReactNode; // por ejemplo, las páginas capturadas en "Nuevo documento"
+  // Contenido arriba del formulario (por ejemplo, las páginas capturadas). Si es una función,
+  // recibe `apply` para llenar campos desde fuera (las sugerencias del OCR).
+  header?: ReactNode | ((apply: (patch: Partial<FormValues>) => void) => ReactNode);
 };
 
 export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: Props) {
@@ -25,6 +27,8 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
+
+  const apply = (patch: Partial<FormValues>) => setValues((prev) => ({ ...prev, ...patch }));
 
   const set = <K extends keyof FormValues>(key: K) => {
     return (value: FormValues[K]) => setValues((prev) => ({ ...prev, [key]: value }));
@@ -44,7 +48,7 @@ export function DocumentForm({ initialValues, submitLabel, onSubmit, header }: P
 
   return (
     <KeyboardScroll contentContainerStyle={styles.container}>
-      {header}
+      {typeof header === 'function' ? header(apply) : header}
       <TextField
         label="Título"
         placeholder="Ej. Cédula de ciudadanía"
