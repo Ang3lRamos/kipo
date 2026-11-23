@@ -7,7 +7,8 @@ module.exports = defineConfig([
   expoConfig,
   prettierRecommended,
   {
-    ignores: ['dist/*', '.expo/*', 'android/*', 'ios/*', 'supabase/functions/*', 'Nuevo/*'],
+    // supabase/functions es código de Deno (imports npm: y jsr:): se revisa al desplegar.
+    ignores: ['dist/*', '.expo/*', 'android/*', 'ios/*', 'supabase/functions/**', 'Nuevo/*'],
   },
   {
     rules: {

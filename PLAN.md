@@ -122,10 +122,10 @@ Como todo se cifra con la DEK, cambiar la contraseña maestra solo vuelve a envo
 
 ## Fase 4 — Vencimientos (3–4 días)
 
-- [ ] Al guardar un documento con `expires_at`, programar notificaciones locales a 60, 30, 7 y 1 día
-- [ ] Reprogramar al editar y cancelar al borrar
-- [ ] El texto de la notificación no revela datos ("Tienes un documento por vencer"), porque se ve con el teléfono bloqueado
-- [ ] Ajustes: qué días avisar
+- [x] Al guardar un documento con `expires_at`, programar notificaciones locales a 60, 30, 7 y 1 día
+- [x] Reprogramar al editar y cancelar al borrar
+- [x] El texto de la notificación no revela datos ("Tienes un documento por vencer"), porque se ve con el teléfono bloqueado
+- [x] Ajustes: qué días avisar
 
 **Terminado cuando**: un documento con vencimiento de prueba en 2 minutos dispara la notificación.
 
