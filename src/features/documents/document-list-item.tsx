@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { ListedDocument } from '@/db/documents-repo';
 import { HighlightedText } from '@/ui/highlighted-text';
+import { SelectMark } from '@/ui/select-mark';
 import { AppText } from '@/ui/text';
 import { useTheme } from '@/ui/theme-provider';
 
@@ -12,6 +13,9 @@ import { DocumentThumb } from './document-thumb';
 import { ExpiryBadge } from './expiry-badge';
 import { hasMatch } from './highlight';
 
+// Con `selecting`, tocar marca o desmarca; mantener presionado empieza la selección.
+type SelectProps = { selecting?: boolean; selected?: boolean; onToggle?: (id: string) => void };
+
 export function openDocument(id: string) {
   router.push({ pathname: '/documents/[id]', params: { id } });
 }
@@ -19,7 +23,12 @@ export function openDocument(id: string) {
 // Tarjeta de "Recientes" y de resultados: miniatura, título y ubicación del original.
 // En una búsqueda, las coincidencias se resaltan; si están en el texto del OCR, se muestra
 // el fragmento donde aparecen.
-export function DocumentListItem({ doc }: { doc: ListedDocument }) {
+export function DocumentListItem({
+  doc,
+  selecting = false,
+  selected = false,
+  onToggle,
+}: { doc: ListedDocument } & SelectProps) {
   const theme = useTheme();
   const muted = theme.colors.textMuted;
   const hl = doc.highlight;
@@ -29,7 +38,9 @@ export function DocumentListItem({ doc }: { doc: ListedDocument }) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={doc.title}
-      onPress={() => openDocument(doc.id)}
+      accessibilityState={selecting ? { selected } : undefined}
+      onPress={() => (selecting ? onToggle?.(doc.id) : openDocument(doc.id))}
+      onLongPress={() => onToggle?.(doc.id)}
       style={({ pressed }) => [
         styles.row,
         { backgroundColor: theme.colors.surface, borderRadius: theme.radius.xl },
@@ -37,6 +48,7 @@ export function DocumentListItem({ doc }: { doc: ListedDocument }) {
         pressed && styles.pressed,
       ]}
     >
+      {selecting ? <SelectMark selected={selected} /> : null}
       <DocumentThumb doc={doc} size={56} />
       <View style={styles.body}>
         {hasMatch(hl?.title) ? (

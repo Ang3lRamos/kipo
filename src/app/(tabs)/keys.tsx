@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import { Plus } from 'lucide-react-native';
 import { useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
 
+import { confirmBulkDelete } from '@/features/lists/bulk-delete';
 import { kindInfo } from '@/features/secrets/kinds';
 import { SecretListItem } from '@/features/secrets/secret-list-item';
 import { useSecretList } from '@/features/secrets/use-secrets';
@@ -12,18 +14,35 @@ import { EmptyState } from '@/ui/empty-state';
 import { Fab } from '@/ui/fab';
 import { Screen } from '@/ui/screen';
 import { SearchBar } from '@/ui/search-bar';
+import { SelectionBar } from '@/ui/selection-bar';
 import { AppText } from '@/ui/text';
 import { useTheme } from '@/ui/theme-provider';
+import { useSelection } from '@/ui/use-selection';
 
 // Claves "raras" que ningún gestor tiene: router, PIN de la alarma, códigos de recuperación…
 export default function KeysScreen() {
   const theme = useTheme();
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<SecretKind | null>(null);
-  const { data: secrets, loading } = useSecretList(query, kind);
+  const db = useSQLiteContext();
+  const { data: secrets, loading, reload } = useSecretList(query, kind);
+  const selection = useSelection();
+  const deleteSelected = () =>
+    confirmBulkDelete(db, 'secrets', [...selection.ids], () => {
+      selection.clear();
+      reload();
+    });
   const filtering = query.trim() !== '' || kind !== null;
 
-  const header = (
+  const header = selection.active ? (
+    <View style={styles.header}>
+      <SelectionBar
+        selection={selection}
+        allIds={secrets.map((s) => s.id)}
+        onDelete={deleteSelected}
+      />
+    </View>
+  ) : (
     <View style={styles.header}>
       <AppText variant="h1">Claves</AppText>
       <SearchBar value={query} onChangeText={setQuery} placeholder="Nombre, usuario o sitio" />
@@ -62,13 +81,23 @@ export default function KeysScreen() {
       <FlatList
         data={secrets}
         keyExtractor={(s) => s.id}
-        renderItem={({ item }) => <SecretListItem secret={item} />}
+        renderItem={({ item }) => (
+          <SecretListItem
+            secret={item}
+            selecting={selection.active}
+            selected={selection.ids.has(item.id)}
+            onToggle={selection.toggle}
+          />
+        )}
+        extraData={selection.ids}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
       />
-      <Fab label="Nueva clave" icon={Plus} onPress={() => router.push('/secrets/new')} />
+      {selection.active ? null : (
+        <Fab label="Nueva clave" icon={Plus} onPress={() => router.push('/secrets/new')} />
+      )}
     </Screen>
   );
 }

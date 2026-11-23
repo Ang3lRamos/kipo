@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 
 import { DocumentListItem } from '@/features/documents/document-list-item';
+import { confirmBulkDelete } from '@/features/lists/bulk-delete';
 import { insertSampleDocuments } from '@/features/documents/sample-documents';
 import { useDocumentList } from '@/features/documents/use-documents';
 import { ExpiringSummary } from '@/features/home/expiring-summary';
@@ -14,7 +15,9 @@ import { Button } from '@/ui/button';
 import { EmptyState } from '@/ui/empty-state';
 import { Fab } from '@/ui/fab';
 import { Screen } from '@/ui/screen';
+import { SelectionBar } from '@/ui/selection-bar';
 import { AppText } from '@/ui/text';
+import { useSelection } from '@/ui/use-selection';
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
@@ -22,13 +25,27 @@ export default function HomeScreen() {
   const [category, setCategory] = useState<Category | null>(null);
   const { data: docs, loading, reload } = useDocumentList({ query, category });
   const filtering = query.trim() !== '' || category !== null;
+  const selection = useSelection();
+  const deleteSelected = () =>
+    confirmBulkDelete(db, 'documents', [...selection.ids], () => {
+      selection.clear();
+      reload();
+    });
 
   const loadSamples = async () => {
     await insertSampleDocuments(db);
     reload();
   };
 
-  const header = (
+  const header = selection.active ? (
+    <View style={styles.header}>
+      <SelectionBar
+        selection={selection}
+        allIds={docs.map((d) => d.id)}
+        onDelete={deleteSelected}
+      />
+    </View>
+  ) : (
     <View style={styles.header}>
       <HomeHeader
         query={query}
@@ -65,17 +82,27 @@ export default function HomeScreen() {
       <FlatList
         data={docs}
         keyExtractor={(doc) => doc.id}
-        renderItem={({ item }) => <DocumentListItem doc={item} />}
+        renderItem={({ item }) => (
+          <DocumentListItem
+            doc={item}
+            selecting={selection.active}
+            selected={selection.ids.has(item.id)}
+            onToggle={selection.toggle}
+          />
+        )}
+        extraData={selection.ids}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
       />
-      <Fab
-        label="Escanear"
-        icon={ScanLine}
-        onPress={() => router.push({ pathname: '/documents/new', params: { scan: '1' } })}
-      />
+      {selection.active ? null : (
+        <Fab
+          label="Escanear"
+          icon={ScanLine}
+          onPress={() => router.push({ pathname: '/documents/new', params: { scan: '1' } })}
+        />
+      )}
     </Screen>
   );
 }

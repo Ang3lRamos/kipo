@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Ellipsis, Pencil } from 'lucide-react-native';
+import { Ellipsis, Pencil, Trash2 } from 'lucide-react-native';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { softDeleteSecret } from '@/db/secrets-repo';
@@ -90,6 +90,7 @@ export default function SecretDetailScreen() {
           <SecretDetails data={secret.data} />
         </Card>
         <Button label="Editar" icon={Pencil} onPress={edit} />
+        <Button label="Eliminar clave" variant="danger" icon={Trash2} onPress={confirmDelete} />
       </ScrollView>
     </Screen>
   );

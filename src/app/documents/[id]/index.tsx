@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Ellipsis, Pencil } from 'lucide-react-native';
+import { Ellipsis, Pencil, Trash2 } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet } from 'react-native';
 
@@ -91,6 +91,12 @@ export default function DocumentDetailScreen() {
             <ActivityList entries={data.activity} />
           </Section>
           <Button label="Editar" icon={Pencil} onPress={edit} />
+          <Button
+            label="Eliminar documento"
+            variant="danger"
+            icon={Trash2}
+            onPress={confirmDelete}
+          />
         </ScrollView>
       )}
     </Screen>
