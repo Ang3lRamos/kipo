@@ -79,10 +79,28 @@ export async function fetchChangesSince(
 
 type ObjectTarget = { documentId: string; pageId: string; kind: 'page' | 'thumb' };
 
+// supabase-js solo dice "non-2xx status code": aquí se saca el código HTTP y el motivo que
+// devolvió la función ({ error: "..." }) para poder diagnosticarlo desde la app.
+async function functionErrorMessage(fn: string, error: { message: string }): Promise<string> {
+  const response = (error as { context?: unknown }).context;
+  if (!(response instanceof Response)) return `${fn}: ${error.message}`;
+  let detail = '';
+  try {
+    const body: unknown = await response.clone().json();
+    if (typeof body === 'object' && body !== null) {
+      const { error: reason, message, msg } = body as Record<string, unknown>;
+      detail = String(reason ?? message ?? msg ?? '');
+    }
+  } catch {
+    detail = (await response.text().catch(() => '')).slice(0, 200);
+  }
+  return `${fn} respondió ${response.status}${detail ? `: ${detail}` : ''}`;
+}
+
 async function presignedUrl(fn: 'upload-url' | 'download-url', target: ObjectTarget) {
   const { data, error } = await supabase().functions.invoke<{ url: string }>(fn, { body: target });
-  fail(error);
-  if (!data?.url) throw new Error('La función no devolvió una URL');
+  if (error) throw new Error(await functionErrorMessage(fn, error));
+  if (!data?.url) throw new Error(`${fn} no devolvió una URL`);
   return data.url;
 }
 
