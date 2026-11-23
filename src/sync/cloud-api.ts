@@ -82,17 +82,29 @@ type ObjectTarget = { documentId: string; pageId: string; kind: 'page' | 'thumb'
 // supabase-js solo dice "non-2xx status code": aquí se saca el código HTTP y el motivo que
 // devolvió la función ({ error: "..." }) para poder diagnosticarlo desde la app.
 async function functionErrorMessage(fn: string, error: { message: string }): Promise<string> {
-  const response = (error as { context?: unknown }).context;
-  if (!(response instanceof Response)) return `${fn}: ${error.message}`;
+  // En React Native el objeto no siempre es instancia del Response global (hay dos
+  // implementaciones), así que se reconoce por su forma y no con instanceof.
+  type ResponseLike = { status: number; json: () => Promise<unknown>; text: () => Promise<string> };
+  const context = (error as { context?: unknown }).context;
+  const looksLikeResponse =
+    typeof context === 'object' &&
+    context !== null &&
+    typeof (context as { status?: unknown }).status === 'number' &&
+    typeof (context as { text?: unknown }).text === 'function';
+  if (!looksLikeResponse) return `${fn}: ${error.message}`;
+  const response = context as ResponseLike;
+  let raw = '';
   let detail = '';
   try {
-    const body: unknown = await response.clone().json();
+    raw = await response.text();
+    const body: unknown = JSON.parse(raw);
     if (typeof body === 'object' && body !== null) {
       const { error: reason, message, msg } = body as Record<string, unknown>;
       detail = String(reason ?? message ?? msg ?? '');
     }
   } catch {
-    detail = (await response.text().catch(() => '')).slice(0, 200);
+    // No era JSON (o el cuerpo ya se había leído): se muestra el texto tal cual, recortado.
+    detail = raw.slice(0, 200);
   }
   return `${fn} respondió ${response.status}${detail ? `: ${detail}` : ''}`;
 }
