@@ -68,9 +68,10 @@ async function writePages(
   for (const page of p.pages) {
     await db.runAsync(
       `INSERT INTO document_pages (id, document_id, position, file_path, thumb_path, mime_type,
-         size_bytes, width, height, created_at, synced_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET position = excluded.position`,
+         size_bytes, width, height, created_at, synced_at, ocr_text)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET position = excluded.position,
+         ocr_text = COALESCE(excluded.ocr_text, document_pages.ocr_text)`,
       page.id,
       documentId,
       page.position,
@@ -82,6 +83,7 @@ async function writePages(
       page.height,
       page.createdAt,
       now,
+      page.ocrText ?? null,
     );
   }
   // Páginas borradas en el otro teléfono.

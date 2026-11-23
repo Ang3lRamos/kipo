@@ -9,6 +9,17 @@ import { buildFtsQuery } from './fts-query';
 
 export type DocumentFilter = { query?: string; category?: Category | null };
 
+// Resultado de búsqueda: el documento y sus textos con las coincidencias marcadas.
+export type ListedDocument = DocumentRecord & {
+  highlight?: { title: string | null; location: string | null; ocr: string | null };
+};
+
+type HighlightColumns = {
+  hl_title: string | null;
+  hl_location: string | null;
+  hl_ocr: string | null;
+};
+
 function inputParams(input: DocumentInput): SQLiteBindValue[] {
   return [
     input.title.trim(),
@@ -81,31 +92,43 @@ export async function getDocument(db: SQLiteDatabase, id: string): Promise<Docum
 export async function listDocuments(
   db: SQLiteDatabase,
   filter: DocumentFilter = {},
-): Promise<DocumentRecord[]> {
+): Promise<ListedDocument[]> {
   const ftsQuery = buildFtsQuery(filter.query ?? '');
   const category = filter.category ?? null;
 
-  // Pesos de bm25 por columna: título > etiquetas = ubicación > notas = OCR.
-  const rows = ftsQuery
-    ? await db.getAllAsync<DocumentRow>(
-        `SELECT d.* FROM documents_fts f
-         JOIN documents d ON d.rowid = f.rowid
-         WHERE documents_fts MATCH ? AND d.deleted_at IS NULL AND (? IS NULL OR d.category = ?)
-         ORDER BY bm25(documents_fts, 10.0, 5.0, 1.0, 5.0, 1.0)
-         LIMIT 200`,
-        ftsQuery,
-        category,
-        category,
-      )
-    : await db.getAllAsync<DocumentRow>(
-        `SELECT * FROM documents
-         WHERE deleted_at IS NULL AND (? IS NULL OR category = ?)
-         ORDER BY updated_at DESC
-         LIMIT 200`,
-        category,
-        category,
-      );
-  return rows.map(rowToDocument);
+  if (!ftsQuery) {
+    const rows = await db.getAllAsync<DocumentRow>(
+      `SELECT * FROM documents
+       WHERE deleted_at IS NULL AND (? IS NULL OR category = ?)
+       ORDER BY updated_at DESC
+       LIMIT 200`,
+      category,
+      category,
+    );
+    return rows.map(rowToDocument);
+  }
+
+  // Columnas del índice: 0 título, 1 etiquetas, 2 notas, 3 ubicación, 4 OCR.
+  // Pesos de bm25: título > etiquetas = ubicación > notas = OCR.
+  // highlight/snippet marcan las coincidencias con char(2)…char(3) (ver highlight.ts).
+  const rows = await db.getAllAsync<DocumentRow & HighlightColumns>(
+    `SELECT d.*,
+       highlight(documents_fts, 0, char(2), char(3)) AS hl_title,
+       highlight(documents_fts, 3, char(2), char(3)) AS hl_location,
+       snippet(documents_fts, 4, char(2), char(3), '…', 10) AS hl_ocr
+     FROM documents_fts f
+     JOIN documents d ON d.rowid = f.rowid
+     WHERE documents_fts MATCH ? AND d.deleted_at IS NULL AND (? IS NULL OR d.category = ?)
+     ORDER BY bm25(documents_fts, 10.0, 5.0, 1.0, 5.0, 1.0)
+     LIMIT 200`,
+    ftsQuery,
+    category,
+    category,
+  );
+  return rows.map((row) => ({
+    ...rowToDocument(row),
+    highlight: { title: row.hl_title, location: row.hl_location, ocr: row.hl_ocr },
+  }));
 }
 
 // Documentos que vencen hasta `untilDate` (AAAA-MM-DD), incluidos los ya vencidos.

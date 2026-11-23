@@ -13,6 +13,7 @@ export type PagePayload = {
   height: number | null;
   hasThumb: boolean;
   createdAt: string;
+  ocrText?: string | null; // fase 6; los documentos subidos antes no lo tienen
 };
 
 export type DocumentPayload = {
@@ -52,6 +53,7 @@ export function buildPayload(doc: DocumentRecord, pages: DocumentPage[]): Docume
       height: page.height,
       hasThumb: page.thumbPath !== null,
       createdAt: page.createdAt,
+      ocrText: page.ocrText,
     })),
   };
 }
@@ -71,7 +73,8 @@ function isPage(value: unknown): value is PagePayload {
     isNullableInt(p.width) &&
     isNullableInt(p.height) &&
     typeof p.hasThumb === 'boolean' &&
-    isText(p.createdAt)
+    isText(p.createdAt) &&
+    (p.ocrText === undefined || isNullableText(p.ocrText))
   );
 }
 

@@ -36,6 +36,7 @@ const pages: DocumentPage[] = [
     width: 1800,
     height: 1350,
     createdAt: '2026-11-22T10:00:00.000Z',
+    ocrText: 'EPS SURA carné de afiliación',
   },
   {
     id: 'p2',
@@ -48,6 +49,7 @@ const pages: DocumentPage[] = [
     width: null,
     height: null,
     createdAt: '2026-11-22T10:05:00.000Z',
+    ocrText: null,
   },
 ];
 
@@ -58,6 +60,12 @@ describe('contenido para la nube', () => {
     expect(parsed).toEqual(payload);
     expect(JSON.stringify(payload)).not.toContain('docs/');
     expect(parsed.pages.map((p) => p.hasThumb)).toEqual([true, false]);
+  });
+
+  it('acepta contenido subido antes de la fase 6 (sin texto por página)', () => {
+    const payload = buildPayload(doc, pages);
+    const old = { ...payload, pages: payload.pages.map(({ ocrText: _omit, ...page }) => page) };
+    expect(parsePayload(JSON.parse(JSON.stringify(old))).pages).toHaveLength(2);
   });
 
   it('rechaza contenido con formato desconocido', () => {

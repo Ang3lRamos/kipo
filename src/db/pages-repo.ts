@@ -13,6 +13,7 @@ type PageRow = {
   width: number | null;
   height: number | null;
   created_at: string;
+  ocr_text: string | null;
 };
 
 function toMime(value: string): PageMimeType {
@@ -31,6 +32,7 @@ function rowToPage(row: PageRow): DocumentPage {
     width: row.width,
     height: row.height,
     createdAt: row.created_at,
+    ocrText: row.ocr_text,
   };
 }
 
@@ -68,6 +70,12 @@ export async function refreshCover(
                     WHERE document_id = ?1 AND deleted_at IS NULL ORDER BY position LIMIT 1),
        size_bytes = (SELECT SUM(size_bytes) FROM document_pages
                      WHERE document_id = ?1 AND deleted_at IS NULL),
+       -- Texto de todas las páginas, en orden: es lo que indexa la búsqueda.
+       ocr_text = (SELECT group_concat(ocr_text, char(10)) FROM (
+                     SELECT ocr_text FROM document_pages
+                     WHERE document_id = ?1 AND deleted_at IS NULL
+                       AND ocr_text IS NOT NULL AND ocr_text != ''
+                     ORDER BY position)),
        updated_at = COALESCE(?2, updated_at)
      WHERE id = ?1`,
     documentId,
@@ -91,8 +99,8 @@ export async function addPages(
     for (const page of pages) {
       await db.runAsync(
         `INSERT INTO document_pages (id, document_id, position, file_path, thumb_path, mime_type,
-           size_bytes, width, height, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           size_bytes, width, height, created_at, ocr_text)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         page.id,
         documentId,
         position++,
@@ -103,6 +111,7 @@ export async function addPages(
         page.width,
         page.height,
         now,
+        page.ocrText,
       );
     }
     await refreshCover(db, documentId);

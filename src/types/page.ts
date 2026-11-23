@@ -11,6 +11,7 @@ export type DocumentPage = {
   width: number | null;
   height: number | null;
   createdAt: string;
+  ocrText: string | null; // texto reconocido; '' si se analizó y no tenía texto
 };
 
 export type NewPage = Omit<DocumentPage, 'position' | 'createdAt'>;
