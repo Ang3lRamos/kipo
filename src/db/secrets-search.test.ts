@@ -44,15 +44,20 @@ beforeAll(() => {
     password: 'Clave-Secreta-99',
     url: 'http://192.168.1.1',
     totp: '',
-    notes: 'wifi: OtraClave',
+    notes: 'pregunta de seguridad: perro Toby',
+    fields: [
+      { id: 'f1', label: 'Red wifi', value: 'CasaRamos5G', secret: false },
+      { id: 'f2', label: 'Clave wifi', value: 'MuySecretaWifi', secret: true },
+    ],
   });
-  add('s2', 'Alarma', { kind: 'note', body: 'PIN 4471' });
+  add('s2', 'Alarma', { kind: 'note', body: 'PIN 4471', fields: [] });
   add('s3', 'Visa', {
     kind: 'card',
     bank: 'Bancolombia',
     last4: '4242',
     holder: 'Angel',
     notes: '',
+    fields: [],
   });
 });
 
@@ -65,8 +70,14 @@ describe('búsqueda de claves (SQLite real)', () => {
 
   it('NUNCA encuentra por la contraseña, las notas ni el contenido de una nota', () => {
     expect(list('Secreta')).toEqual([]);
-    expect(list('wifi')).toEqual([]);
+    expect(list('toby')).toEqual([]);
     expect(list('4471')).toEqual([]);
+  });
+
+  it('campos adicionales: se busca por su nombre y valor, salvo los secretos', () => {
+    expect(list('casaramos5g')).toEqual(['s1']);
+    expect(list('clave wifi')).toEqual(['s1']); // el nombre del campo sí
+    expect(list('muysecretawifi')).toEqual([]); // el valor secreto nunca
   });
 
   it('% y _ no actúan como comodines', () => {

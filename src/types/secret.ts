@@ -4,6 +4,10 @@
 export const secretKinds = ['login', 'note', 'card', 'subscription'] as const;
 export type SecretKind = (typeof secretKinds)[number];
 
+// Campo libre que se agrega a cualquier clave: PIN del perfil, red wifi, pregunta de
+// seguridad… `secret: true` lo oculta en pantalla y lo deja fuera de la búsqueda.
+export type CustomField = { id: string; label: string; value: string; secret: boolean };
+
 export type LoginData = {
   kind: 'login';
   username: string;
@@ -11,12 +15,20 @@ export type LoginData = {
   url: string;
   totp: string; // clave base32 u otpauth:// para los códigos de dos pasos
   notes: string;
+  fields: CustomField[];
 };
 
-export type NoteData = { kind: 'note'; body: string };
+export type NoteData = { kind: 'note'; body: string; fields: CustomField[] };
 
 // Solo el banco y los últimos 4 dígitos: nunca el número completo ni el CVV.
-export type CardData = { kind: 'card'; bank: string; last4: string; holder: string; notes: string };
+export type CardData = {
+  kind: 'card';
+  bank: string;
+  last4: string;
+  holder: string;
+  notes: string;
+  fields: CustomField[];
+};
 
 export const subscriptionPeriods = ['mensual', 'anual', 'otro'] as const;
 export type SubscriptionPeriod = (typeof subscriptionPeriods)[number];
@@ -24,11 +36,14 @@ export type SubscriptionPeriod = (typeof subscriptionPeriods)[number];
 export type SubscriptionData = {
   kind: 'subscription';
   service: string;
-  account: string;
+  account: string; // correo o usuario
+  password: string;
+  profile: string; // perfil dentro del servicio (por ejemplo, el de Netflix)
   amount: string;
   period: SubscriptionPeriod;
   renewsAt: string; // AAAA-MM-DD o vacío
   notes: string;
+  fields: CustomField[];
 };
 
 export type SecretData = LoginData | NoteData | CardData | SubscriptionData;
