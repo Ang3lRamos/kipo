@@ -1,19 +1,17 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react-native';
+import { Pencil, Trash2 } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import { logActivity } from '@/db/activity-repo';
-import { softDeleteDocument } from '@/db/documents-repo';
 import { ActivityList } from '@/features/documents/activity-list';
 import { formatDate } from '@/features/documents/dates';
 import { DocumentSummary } from '@/features/documents/document-summary';
 import { LocationCard } from '@/features/documents/location-card';
 import { useDocumentDetail } from '@/features/documents/use-documents';
 import { PagesSection } from '@/features/pages/pages-section';
-import { deleteDocumentFiles } from '@/files/local-store';
-import { afterLocalChange } from '@/sync/after-local-change';
+import { useDelete } from '@/features/lists/use-delete';
 import { Button } from '@/ui/button';
 import { InfoRow, Section } from '@/ui/card';
 import { EmptyState } from '@/ui/empty-state';
@@ -35,42 +33,17 @@ export default function DocumentDetailScreen() {
   const doc = data.doc;
   const edit = () => router.push({ pathname: '/documents/[id]/edit', params: { id } });
 
-  const confirmDelete = () => {
-    if (!doc) return;
-    Alert.alert('Eliminar documento', `¿Eliminar "${doc.title}"?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await softDeleteDocument(db, doc.id);
-          // La fila queda para la sincronización; los archivos locales se borran ya.
-          deleteDocumentFiles(doc.id);
-          afterLocalChange(db); // cancela sus avisos y sube el borrado
-          router.back();
-        },
-      },
-    ]);
+  const remove = useDelete('documents');
+  const confirmDelete = async () => {
+    if (doc && (await remove([doc.id], doc.title))) router.back();
   };
-
-  const openMenu = () =>
-    Alert.alert('Opciones', undefined, [
-      { text: 'Editar', onPress: edit },
-      { text: 'Eliminar', style: 'destructive', onPress: confirmDelete },
-      { text: 'Cancelar', style: 'cancel' },
-    ]);
 
   return (
     <Screen>
       <ScreenHeader
         right={
           doc ? (
-            <IconButton
-              icon={Ellipsis}
-              accessibilityLabel="Opciones"
-              tone="surface"
-              onPress={openMenu}
-            />
+            <IconButton icon={Pencil} accessibilityLabel="Editar" tone="surface" onPress={edit} />
           ) : null
         }
       />
@@ -95,7 +68,7 @@ export default function DocumentDetailScreen() {
             label="Eliminar documento"
             variant="danger"
             icon={Trash2}
-            onPress={confirmDelete}
+            onPress={() => void confirmDelete()}
           />
         </ScrollView>
       )}

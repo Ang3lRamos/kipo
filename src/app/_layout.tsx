@@ -14,6 +14,7 @@ import { VaultProvider, useVault } from '@/features/lock/vault-context';
 import { VaultGate } from '@/features/lock/vault-gate';
 import { NotificationRouter } from '@/features/navigation/notification-router';
 import { configureNotifications } from '@/notifications/notifier';
+import { FeedbackProvider } from '@/ui/feedback';
 import { useAppFonts } from '@/ui/fonts';
 import { ThemeProvider, useTheme } from '@/ui/theme-provider';
 
@@ -51,19 +52,21 @@ function UnlockedApp({ session }: { session: Session }) {
       onInit={onInit}
       onError={onError}
     >
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: theme.colors.background },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="documents/[id]/pages/[pageId]"
-          options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
-        />
-      </Stack>
-      <NotificationRouter />
+      <FeedbackProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: theme.colors.background },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="documents/[id]/pages/[pageId]"
+            options={{ contentStyle: { backgroundColor: theme.viewer.background } }}
+          />
+        </Stack>
+        <NotificationRouter />
+      </FeedbackProvider>
     </SQLiteProvider>
   );
 }

@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { softDeletePage } from '@/db/pages-repo';
 import { useSession } from '@/features/lock/vault-context';
@@ -10,6 +10,7 @@ import type { CapturedItem } from '@/files/capture';
 import { deleteLocalFile } from '@/files/local-store';
 import type { Category } from '@/types/document';
 import type { DocumentPage } from '@/types/page';
+import { useFeedback } from '@/ui/feedback';
 import { Kipo } from '@/ui/kipo/kipo';
 import { AppText } from '@/ui/text';
 import { useTheme } from '@/ui/theme-provider';
@@ -28,6 +29,7 @@ export function PagesSection({ documentId, category }: Props) {
   const { keys } = useSession();
   const { data: pages, reload } = usePages(documentId);
   const [busy, setBusy] = useState(false);
+  const { confirm, toast } = useFeedback();
   const [message, setMessage] = useState<string | null>(null);
 
   const handleCaptured = async (items: CapturedItem[]) => {
@@ -43,21 +45,26 @@ export function PagesSection({ documentId, category }: Props) {
     }
   };
 
-  const confirmDelete = (page: DocumentPage, index: number) => {
-    Alert.alert('Eliminar página', `¿Eliminar la página ${index + 1}?`, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Eliminar',
-        style: 'destructive',
-        onPress: async () => {
-          await softDeletePage(db, page);
-          deleteLocalFile(page.filePath);
-          deleteLocalFile(page.thumbPath);
-          reload();
-          afterLocalChange(db);
-        },
-      },
-    ]);
+  const confirmDelete = async (page: DocumentPage, index: number) => {
+    const ok = await confirm({
+      title: `¿Eliminar la página ${index + 1}?`,
+      message: 'No se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await softDeletePage(db, page);
+      deleteLocalFile(page.filePath);
+      deleteLocalFile(page.thumbPath);
+      toast('Página eliminada');
+    } catch (error) {
+      console.error('No se pudo eliminar la página', error);
+      toast('No se pudo eliminar la página', 'error');
+    } finally {
+      reload();
+      afterLocalChange(db);
+    }
   };
 
   const openPage = (page: DocumentPage) =>
@@ -88,7 +95,7 @@ export function PagesSection({ documentId, category }: Props) {
                 width={128}
                 height={170}
                 onPress={() => openPage(page)}
-                onLongPress={() => confirmDelete(page, index)}
+                onLongPress={() => void confirmDelete(page, index)}
               />
             ))}
           </ScrollView>

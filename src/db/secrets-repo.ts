@@ -104,3 +104,16 @@ export async function softDeleteSecret(db: SQLiteDatabase, id: string): Promise<
     id,
   );
 }
+
+// Varios a la vez, en una sola sentencia. Los datos se vacían como en softDeleteSecret.
+export async function softDeleteSecrets(db: SQLiteDatabase, ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const now = new Date().toISOString();
+  await db.runAsync(
+    `UPDATE secrets SET deleted_at = ?, updated_at = ?, data = '{}', search_text = ''
+     WHERE id IN (${ids.map(() => '?').join(',')})`,
+    now,
+    now,
+    ...ids,
+  );
+}

@@ -144,3 +144,15 @@ export async function listExpiring(
   );
   return rows.map(rowToDocument);
 }
+
+// Borrado lógico de varios a la vez: una sola sentencia, atómica sin abrir una transacción.
+export async function softDeleteDocuments(db: SQLiteDatabase, ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const now = new Date().toISOString();
+  await db.runAsync(
+    `UPDATE documents SET deleted_at = ?, updated_at = ? WHERE id IN (${ids.map(() => '?').join(',')})`,
+    now,
+    now,
+    ...ids,
+  );
+}

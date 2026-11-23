@@ -19,6 +19,7 @@ export interface ThemeColors {
   caution: { bg: string; text: string };
   location: { bg: string; text: string; icon: string };
   danger: { bg: string; text: string };
+  scrim: string; // fondo oscurecido detrás de los diálogos
 }
 
 export type CategoryKey =
@@ -161,6 +162,7 @@ export function buildTheme(palette: PaletteName, mode: ColorMode) {
       : { bg: '#E7E2FB', text: '#2B2F3A', icon: '#5B4BB7' },
     // Agregado en Kipo: errores y acciones destructivas.
     danger: dark ? { bg: '#4A2A2E', text: '#FFB4AB' } : { bg: '#FFE1E1', text: '#B42318' },
+    scrim: dark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(43, 47, 58, 0.45)',
   };
   return { palette, mode, colors, mascot: s.mascot, ...tokens };
 }

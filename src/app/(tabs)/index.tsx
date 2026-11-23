@@ -2,10 +2,11 @@ import { router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ScanLine } from 'lucide-react-native';
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { DocumentListItem } from '@/features/documents/document-list-item';
-import { confirmBulkDelete } from '@/features/lists/bulk-delete';
+import { useListDeletion } from '@/features/lists/use-list-deletion';
 import { insertSampleDocuments } from '@/features/documents/sample-documents';
 import { useDocumentList } from '@/features/documents/use-documents';
 import { ExpiringSummary } from '@/features/home/expiring-summary';
@@ -16,21 +17,16 @@ import { EmptyState } from '@/ui/empty-state';
 import { Fab } from '@/ui/fab';
 import { Screen } from '@/ui/screen';
 import { SelectionBar } from '@/ui/selection-bar';
+import { AnimatedRow, listLayout } from '@/ui/animated-row';
 import { AppText } from '@/ui/text';
-import { useSelection } from '@/ui/use-selection';
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category | null>(null);
-  const { data: docs, loading, reload } = useDocumentList({ query, category });
+  const { data, loading, reload } = useDocumentList({ query, category });
+  const { selection, visible: docs, deleteSelected } = useListDeletion('documents', data, reload);
   const filtering = query.trim() !== '' || category !== null;
-  const selection = useSelection();
-  const deleteSelected = () =>
-    confirmBulkDelete(db, 'documents', [...selection.ids], () => {
-      selection.clear();
-      reload();
-    });
 
   const loadSamples = async () => {
     await insertSampleDocuments(db);
@@ -42,7 +38,7 @@ export default function HomeScreen() {
       <SelectionBar
         selection={selection}
         allIds={docs.map((d) => d.id)}
-        onDelete={deleteSelected}
+        onDelete={() => void deleteSelected()}
       />
     </View>
   ) : (
@@ -79,17 +75,20 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <FlatList
+      <Animated.FlatList
         data={docs}
         keyExtractor={(doc) => doc.id}
         renderItem={({ item }) => (
-          <DocumentListItem
-            doc={item}
-            selecting={selection.active}
-            selected={selection.ids.has(item.id)}
-            onToggle={selection.toggle}
-          />
+          <AnimatedRow>
+            <DocumentListItem
+              doc={item}
+              selecting={selection.active}
+              selected={selection.ids.has(item.id)}
+              onToggle={selection.toggle}
+            />
+          </AnimatedRow>
         )}
+        itemLayoutAnimation={listLayout}
         extraData={selection.ids}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}

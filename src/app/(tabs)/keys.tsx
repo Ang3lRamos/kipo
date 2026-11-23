@@ -1,10 +1,10 @@
 import { router } from 'expo-router';
-import { useSQLiteContext } from 'expo-sqlite';
 import { Plus } from 'lucide-react-native';
 import { useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { confirmBulkDelete } from '@/features/lists/bulk-delete';
+import { useListDeletion } from '@/features/lists/use-list-deletion';
 import { kindInfo } from '@/features/secrets/kinds';
 import { SecretListItem } from '@/features/secrets/secret-list-item';
 import { useSecretList } from '@/features/secrets/use-secrets';
@@ -16,22 +16,16 @@ import { Screen } from '@/ui/screen';
 import { SearchBar } from '@/ui/search-bar';
 import { SelectionBar } from '@/ui/selection-bar';
 import { AppText } from '@/ui/text';
+import { AnimatedRow, listLayout } from '@/ui/animated-row';
 import { useTheme } from '@/ui/theme-provider';
-import { useSelection } from '@/ui/use-selection';
 
 // Claves "raras" que ningún gestor tiene: router, PIN de la alarma, códigos de recuperación…
 export default function KeysScreen() {
   const theme = useTheme();
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState<SecretKind | null>(null);
-  const db = useSQLiteContext();
-  const { data: secrets, loading, reload } = useSecretList(query, kind);
-  const selection = useSelection();
-  const deleteSelected = () =>
-    confirmBulkDelete(db, 'secrets', [...selection.ids], () => {
-      selection.clear();
-      reload();
-    });
+  const { data, loading, reload } = useSecretList(query, kind);
+  const { selection, visible: secrets, deleteSelected } = useListDeletion('secrets', data, reload);
   const filtering = query.trim() !== '' || kind !== null;
 
   const header = selection.active ? (
@@ -39,7 +33,7 @@ export default function KeysScreen() {
       <SelectionBar
         selection={selection}
         allIds={secrets.map((s) => s.id)}
-        onDelete={deleteSelected}
+        onDelete={() => void deleteSelected()}
       />
     </View>
   ) : (
@@ -78,17 +72,20 @@ export default function KeysScreen() {
 
   return (
     <Screen>
-      <FlatList
+      <Animated.FlatList
         data={secrets}
         keyExtractor={(s) => s.id}
         renderItem={({ item }) => (
-          <SecretListItem
-            secret={item}
-            selecting={selection.active}
-            selected={selection.ids.has(item.id)}
-            onToggle={selection.toggle}
-          />
+          <AnimatedRow>
+            <SecretListItem
+              secret={item}
+              selecting={selection.active}
+              selected={selection.ids.has(item.id)}
+              onToggle={selection.toggle}
+            />
+          </AnimatedRow>
         )}
+        itemLayoutAnimation={listLayout}
         extraData={selection.ids}
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
