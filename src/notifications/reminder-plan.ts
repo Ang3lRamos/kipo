@@ -23,7 +23,14 @@ export function parseOffsets(raw: string | null): number[] {
   }
 }
 
-export type PlannedReminder = { documentId: string; offset: number; date: Date };
+// `kind` renewal = renovación de una suscripción; `key` distingue sus varias fechas.
+export type PlannedReminder = {
+  documentId: string;
+  offset: number;
+  date: Date;
+  kind?: 'renewal';
+  key?: string;
+};
 
 function atHour(iso: string, hour: number): Date {
   const [y, m, d] = iso.split('-').map(Number);

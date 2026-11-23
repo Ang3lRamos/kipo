@@ -115,6 +115,11 @@ export function SecretFields({ data, errors, onChange }: Props) {
         value={data.renewsAt}
         onChange={(renewsAt) => onChange({ ...data, renewsAt })}
         error={errors.renewsAt}
+        hint={
+          data.period === 'otro'
+            ? 'Kipo te avisa 3 días antes y el mismo día.'
+            : `Kipo te avisa 3 días antes y el mismo día de cada renovación ${data.period}.`
+        }
       />
       <TextField label="Notas" multiline {...field(data, 'notes')} />
       {extra}

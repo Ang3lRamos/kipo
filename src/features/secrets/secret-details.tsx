@@ -1,9 +1,17 @@
 import { formatDate } from '@/features/documents/dates';
-import type { CustomField, SecretData } from '@/types/secret';
+import type { CustomField, SecretData, SubscriptionPeriod } from '@/types/secret';
 import { formatMoneyInput } from '@/ui/input-format';
+import { nextRenewals } from '@/notifications/renewal-plan';
 
 import { SecretValueRow } from './secret-value-row';
 import { TotpView } from './totp-view';
+
+// La próxima fecha real según el periodo (si la escrita ya pasó, la del mes o año siguiente).
+function nextRenewalLabel(renewsAt: string, period: SubscriptionPeriod): string {
+  if (!renewsAt) return '';
+  const next = nextRenewals(renewsAt, period)[0];
+  return formatDate(next ?? renewsAt);
+}
 
 function CustomFields({ fields }: { fields: CustomField[] }) {
   return (
@@ -65,7 +73,7 @@ export function SecretDetails({ data }: { data: SecretData }) {
           />
           <SecretValueRow
             label="Próxima renovación"
-            value={data.renewsAt ? formatDate(data.renewsAt) : ''}
+            value={nextRenewalLabel(data.renewsAt, data.period)}
           />
           <SecretValueRow label="Notas" value={data.notes} />
         </>

@@ -3,11 +3,13 @@ import { AndroidImportance, AndroidNotificationVisibility } from 'expo-notificat
 import { Platform } from 'react-native';
 
 import { reminderText, type PlannedReminder } from './reminder-plan';
+import { renewalText } from './renewal-plan';
 
 // Solo notificaciones locales: nada sale del teléfono.
 
 const channelId = 'vencimientos';
 export const reminderRoute = '/expiring';
+export const renewalRoute = '/keys';
 
 export async function configureNotifications(): Promise<void> {
   Notifications.setNotificationHandler({
@@ -37,8 +39,10 @@ export async function ensurePermission(): Promise<boolean> {
   return (await Notifications.requestPermissionsAsync()).granted;
 }
 
-function content(offset: number): Notifications.NotificationContentInput {
-  return { title: 'Kipo', body: reminderText(offset), data: { route: reminderRoute } };
+function content(offset: number, renewal = false): Notifications.NotificationContentInput {
+  return renewal
+    ? { title: 'Kipo', body: renewalText(offset), data: { route: renewalRoute } }
+    : { title: 'Kipo', body: reminderText(offset), data: { route: reminderRoute } };
 }
 
 // Reemplaza todos los avisos programados por los del plan.
@@ -46,8 +50,10 @@ export async function replaceScheduled(plan: PlannedReminder[]): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   for (const reminder of plan) {
     await Notifications.scheduleNotificationAsync({
-      identifier: `${reminder.documentId}:${reminder.offset}`,
-      content: content(reminder.offset),
+      identifier: [reminder.documentId, reminder.key, reminder.offset]
+        .filter((p) => p !== undefined)
+        .join(':'),
+      content: content(reminder.offset, reminder.kind === 'renewal'),
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: reminder.date,
